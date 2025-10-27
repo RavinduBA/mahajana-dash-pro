@@ -22,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -35,6 +36,7 @@ const menuItems = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { logout } = useAuth();
   const isCollapsed = state === "collapsed";
 
   return (
@@ -97,6 +99,7 @@ export function AppSidebar() {
           variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-accent transition-smooth"
           size={isCollapsed ? "icon" : "default"}
+          onClick={logout}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
           {!isCollapsed && <span className="ml-3">Logout</span>}

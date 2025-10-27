@@ -1,4 +1,4 @@
-import { Search, Bell, User } from "lucide-react";
+import { Search, Bell, User, LogOut } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
+  const { user, logout } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-sm">
       <div className="flex h-16 items-center gap-4 px-6">
@@ -31,6 +35,8 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+          
           <Button variant="ghost" size="icon" className="relative transition-smooth hover:bg-accent">
             <Bell className="h-5 w-5 text-muted-foreground" />
             <Badge 
@@ -46,12 +52,12 @@ export function Header() {
               <Button variant="ghost" className="flex items-center gap-2 transition-smooth hover:bg-accent">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    AD
+                    {user?.fullName.split(' ').map(n => n[0]).join('').toUpperCase() || 'AD'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
-                  <span className="text-sm font-medium">Admin User</span>
-                  <span className="text-xs text-muted-foreground">Administrator</span>
+                  <span className="text-sm font-medium">{user?.fullName || 'Admin User'}</span>
+                  <span className="text-xs text-muted-foreground">{user?.role || 'Administrator'}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -63,8 +69,12 @@ export function Header() {
                 <span>Profile</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer hover:bg-accent text-destructive">
-                Logout
+              <DropdownMenuItem 
+                className="cursor-pointer hover:bg-accent text-destructive"
+                onClick={logout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
