@@ -61,8 +61,8 @@ export function Header() {
               >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.fullName
-                      .split(" ")
+                    {user?.name
+                      ?.split(" ")
                       .map((n) => n[0])
                       .join("")
                       .toUpperCase() || "AD"}
@@ -70,7 +70,7 @@ export function Header() {
                 </Avatar>
                 <div className="hidden md:flex flex-col items-start">
                   <span className="text-sm font-medium">
-                    {user?.fullName || "Admin User"}
+                    {user?.name || "Admin User"}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {user?.role || "Administrator"}

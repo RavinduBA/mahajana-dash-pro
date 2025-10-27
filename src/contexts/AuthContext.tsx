@@ -7,13 +7,17 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api";
 
 interface User {
-  id: string;
-  fullName: string;
+  id: number;
+  name: string;
   email: string;
-  phone: string;
-  role: "Admin" | "Staff" | "Delivery";
+  role: string;
+  branch?: {
+    id: number;
+    title: string;
+  };
 }
 
 interface AuthContextType {
@@ -37,38 +41,70 @@ interface RegisterData {
   role: "Admin" | "Staff" | "Delivery";
 }
 
+interface LoginResponse {
+  data: {
+    token: string;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+      branch?: {
+        id: number;
+        title: string;
+      };
+    };
+  };
+}
+
+interface MeResponse {
+  data: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    branch?: {
+      id: number;
+      title: string;
+    };
+  };
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Default mock user - always authenticated for now (backend will be implemented later)
-  const [user, setUser] = useState<User | null>({
-    id: "1",
-    fullName: "Admin User",
-    email: "admin@mahajana.com",
-    phone: "0771234567",
-    role: "Admin",
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // Set default user if none exists
-      const defaultUser = {
-        id: "1",
-        fullName: "Admin User",
-        email: "admin@mahajana.com",
-        phone: "0771234567",
-        role: "Admin" as const,
-      };
-      setUser(defaultUser);
-      localStorage.setItem("user", JSON.stringify(defaultUser));
-    }
-    setIsLoading(false);
+    // Check for stored token and user data on mount
+    const checkAuth = async () => {
+      const token = localStorage.getItem("admin_token");
+      const storedUser = localStorage.getItem("admin_user");
+
+      if (token && storedUser) {
+        try {
+          // Set token for API calls
+          apiClient.setToken(token);
+
+          // Parse and set stored user data
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+          console.log("✅ Restored user session:", userData);
+        } catch (error) {
+          // Invalid stored data, clear everything
+          console.error("❌ Failed to restore session:", error);
+          apiClient.clearToken();
+          localStorage.removeItem("admin_user");
+          localStorage.removeItem("admin_token");
+          setUser(null);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (
@@ -78,33 +114,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("🔐 Attempting login...", { email });
+      const response = await apiClient.post<LoginResponse>(
+        "/auth/staff/login",
+        {
+          email,
+          password,
+        }
+      );
 
-      // Mock user data
-      const mockUser: User = {
-        id: "1",
-        fullName: "Admin User",
-        email: email,
-        phone: "0771234567",
-        role: "Admin",
-      };
+      console.log("✅ Login response:", response);
 
-      setUser(mockUser);
-      if (rememberMe) {
-        localStorage.setItem("user", JSON.stringify(mockUser));
+      const { token, user: userData } = response.data;
+
+      // Store token
+      apiClient.setToken(token);
+      console.log("🔑 Token stored:", token.substring(0, 20) + "...");
+
+      // Store user data
+      setUser(userData);
+      localStorage.setItem("admin_user", JSON.stringify(userData));
+      console.log("👤 User data stored:", userData);
+
+      // Only persist token if remember me is checked
+      if (!rememberMe) {
+        // For session-only login, we'll clear token on window close
+        window.addEventListener("beforeunload", () => {
+          apiClient.clearToken();
+        });
       }
 
       toast({
         title: "Login successful",
-        description: `Welcome back, ${mockUser.fullName}!`,
+        description: `Welcome back, ${userData.name}!`,
       });
 
+      console.log("🚀 Navigating to dashboard...");
       navigate("/");
     } catch (error) {
+      console.error("❌ Login error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Invalid email or password";
+
       toast({
         title: "Login failed",
-        description: "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -116,27 +170,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const newUser: User = {
-        id: Date.now().toString(),
-        ...data,
-      };
-
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-
+      // Note: The API doesn't have a public staff registration endpoint
+      // Staff accounts should be created by administrators
+      // For now, we'll show an appropriate error message
       toast({
-        title: "Registration successful",
-        description: "Your account has been created successfully!",
+        title: "Registration not available",
+        description:
+          "Please contact your administrator to create a staff account.",
+        variant: "destructive",
       });
-
-      navigate("/");
+      throw new Error("Registration endpoint not available");
     } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Registration failed. Please contact your administrator.";
+
       toast({
         title: "Registration failed",
-        description: "Something went wrong. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
@@ -146,7 +198,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    // For now, just navigate without clearing user (auth disabled temporarily)
+    // Clear auth state
+    setUser(null);
+    apiClient.clearToken();
+    localStorage.removeItem("admin_user");
+
     toast({
       title: "Logged out",
       description: "You have been logged out successfully.",

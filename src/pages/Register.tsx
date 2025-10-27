@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,149 +125,23 @@ export default function Register() {
             Staff Registration
           </h1>
           <p className="text-muted-foreground">
-            Create your account to join the team
+            Staff accounts are managed by administrators
           </p>
         </div>
 
         <div className="bg-card rounded-lg border border-border p-6 shadow-card">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name *</Label>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                value={formData.fullName}
-                onChange={(e) => handleChange("fullName", e.target.value)}
-                className={errors.fullName ? "border-destructive" : ""}
-              />
-              {errors.fullName && (
-                <p className="text-sm text-destructive">{errors.fullName}</p>
-              )}
+          <div className="text-center space-y-4 py-8">
+            <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <Shield className="h-8 w-8 text-muted-foreground" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john@mahajana.com"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                className={errors.email ? "border-destructive" : ""}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
+              <h3 className="text-lg font-semibold">Registration Restricted</h3>
+              <p className="text-sm text-muted-foreground">
+                Staff accounts can only be created by system administrators.
+                Please contact your administrator to request an account.
+              </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="0771234567"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className={errors.phone ? "border-destructive" : ""}
-              />
-              {errors.phone && (
-                <p className="text-sm text-destructive">{errors.phone}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="At least 8 characters"
-                  value={formData.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                  className={
-                    errors.password ? "border-destructive pr-10" : "pr-10"
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-smooth"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Re-enter your password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    handleChange("confirmPassword", e.target.value)
-                  }
-                  className={
-                    errors.confirmPassword
-                      ? "border-destructive pr-10"
-                      : "pr-10"
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-smooth"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">Role *</Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => handleChange("role", value)}
-              >
-                <SelectTrigger
-                  className={errors.role ? "border-destructive" : ""}
-                >
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Staff">Staff</SelectItem>
-                  <SelectItem value="Delivery">Delivery</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.role && (
-                <p className="text-sm text-destructive">{errors.role}</p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Register"}
-            </Button>
-          </form>
+          </div>
 
           <div className="mt-4 text-center text-sm">
             <span className="text-muted-foreground">

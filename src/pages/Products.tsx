@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -38,72 +38,44 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { apiClient } from "@/lib/api";
+import { toast } from "@/hooks/use-toast";
 
-// Mock data
-const mockProducts = [
-  {
-    id: 1,
-    name: "Fresh Milk 1L",
-    sku: "DRY001",
-    category: "Dairy",
-    brand: "Anchor",
-    price: 250,
-    stock: 120,
-    unit: "L",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Bread Loaf",
-    sku: "BKY001",
-    category: "Bakery",
-    brand: "Harischandra",
-    price: 80,
-    stock: 45,
-    unit: "pcs",
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Rice 5kg",
-    sku: "GRN001",
-    category: "Grains",
-    brand: "Araliya",
-    price: 1200,
-    stock: 200,
-    unit: "kg",
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Chicken 1kg",
-    sku: "MET001",
-    category: "Meat",
-    brand: "Crysbro",
-    price: 650,
-    stock: 8,
-    unit: "kg",
-    status: "low_stock",
-  },
-  {
-    id: 5,
-    name: "Cooking Oil 2L",
-    sku: "OIL001",
-    category: "Oils",
-    brand: "Fortune",
-    price: 890,
-    stock: 0,
-    unit: "L",
-    status: "out_of_stock",
-  },
-];
+interface Product {
+  id: number;
+  title: string;
+  description?: string;
+  sku: string;
+  barcode?: string;
+  price: number;
+  unit: string;
+  image?: string;
+  category?: {
+    id: number;
+    title: string;
+  };
+  brand?: {
+    id: number;
+    title: string;
+  };
+  branches?: Array<{
+    id: number;
+    branch: {
+      id: number;
+      title: string;
+    };
+    stock: number;
+    minStock: number;
+    maxStock: number;
+  }>;
+}
 
 export default function Products() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<
-    (typeof mockProducts)[0] | null
-  >(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
@@ -119,11 +91,49 @@ export default function Products() {
     image: null as File | null,
   });
 
-  const getStatusBadge = (status: string) => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiClient.get<{ data: { products: Product[]; pagination: any } }>("/products");
+      console.log("Products fetched:", response);
+      setProducts(response.data?.products || []);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getTotalStock = (product: Product) => {
+    if (!product.branches || product.branches.length === 0) return 0;
+    return product.branches.reduce((total, branch) => total + branch.stock, 0);
+  };
+
+  const getStockStatus = (product: Product) => {
+    const totalStock = getTotalStock(product);
+    const minStock = product.branches?.[0]?.minStock || 10;
+
+    if (totalStock === 0) return "out_of_stock";
+    if (totalStock <= minStock) return "low_stock";
+    return "active";
+  };
+
+  const getStatusBadge = (product: Product) => {
+    const status = getStockStatus(product);
+
     switch (status) {
       case "active":
         return (
-          <Badge className="bg-success text-success-foreground">Active</Badge>
+          <Badge className="bg-success text-success-foreground">In Stock</Badge>
         );
       case "low_stock":
         return (
@@ -138,37 +148,103 @@ export default function Products() {
     }
   };
 
-  const handleEdit = (product: (typeof mockProducts)[0]) => {
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setFormData({
-      name: product.name,
+      name: product.title,
       sku: product.sku,
-      description: "",
-      category: product.category.toLowerCase(),
-      brand: product.brand.toLowerCase(),
+      description: product.description || "",
+      category: product.category?.id.toString() || "",
+      brand: product.brand?.id.toString() || "",
       price: product.price.toString(),
       unit: product.unit,
-      stock: product.stock.toString(),
-      minStock: "",
-      maxStock: "",
-      barcode: "",
+      stock: getTotalStock(product).toString(),
+      minStock: product.branches?.[0]?.minStock.toString() || "",
+      maxStock: product.branches?.[0]?.maxStock.toString() || "",
+      barcode: product.barcode || "",
       image: null,
     });
     setIsAddDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingProduct) {
-      console.log("Updating product:", editingProduct.id, formData);
-      // API call: PUT /admin/products/:id
-    } else {
-      console.log("Creating product:", formData);
-      // API call: POST /admin/products
+  const handleDelete = async (productId: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) {
+      return;
     }
-    setIsAddDialogOpen(false);
-    setEditingProduct(null);
-    // Reset form
+
+    try {
+      await apiClient.delete(`/admin/products/${productId}`);
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete product",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (editingProduct) {
+        // Update existing product
+        await apiClient.put(`/admin/products/${editingProduct.id}`, {
+          title: formData.name,
+          sku: formData.sku,
+          description: formData.description,
+          categoryId: formData.category ? Number(formData.category) : undefined,
+          brandId: formData.brand ? Number(formData.brand) : undefined,
+          price: Number(formData.price),
+          unit: formData.unit,
+          barcode: formData.barcode || undefined,
+        });
+
+        toast({
+          title: "Success",
+          description: "Product updated successfully",
+        });
+      } else {
+        // Create new product
+        await apiClient.post("/admin/products", {
+          title: formData.name,
+          sku: formData.sku,
+          description: formData.description,
+          categoryId: formData.category ? Number(formData.category) : undefined,
+          brandId: formData.brand ? Number(formData.brand) : undefined,
+          price: Number(formData.price),
+          unit: formData.unit,
+          barcode: formData.barcode || undefined,
+        });
+
+        toast({
+          title: "Success",
+          description: "Product created successfully",
+        });
+      }
+
+      setIsAddDialogOpen(false);
+      setEditingProduct(null);
+      resetForm();
+      fetchProducts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save product",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resetForm = () => {
     setFormData({
       name: "",
       sku: "",
@@ -184,6 +260,16 @@ export default function Products() {
       image: null,
     });
   };
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category?.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      product.brand?.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -449,9 +535,21 @@ export default function Products() {
                 type="submit"
                 form="product-form"
                 className="bg-primary hover:bg-primary/90"
+                disabled={isLoading}
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Product
+                {isLoading ? (
+                  "Saving..."
+                ) : editingProduct ? (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update Product
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Product
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -497,46 +595,65 @@ export default function Products() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockProducts.map((product) => (
-                <TableRow
-                  key={product.id}
-                  className="border-b border-border hover:bg-muted/30 transition-smooth"
-                >
-                  <TableCell className="font-medium">{product.sku}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.brand}</TableCell>
-                  <TableCell>{product.price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    {product.stock} {product.unit}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    Loading products...
                   </TableCell>
-                  <TableCell>{getStatusBadge(product.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(product)}
-                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
-                        title="Edit product"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          console.log("Delete product:", product.id)
-                        }
-                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
-                        title="Delete product"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                </TableRow>
+              ) : filteredProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    <div className="space-y-2">
+                      <Package className="h-12 w-12 text-muted-foreground mx-auto" />
+                      <p className="text-muted-foreground">
+                        {searchQuery
+                          ? "No products found matching your search"
+                          : "No products available"}
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredProducts.map((product) => (
+                  <TableRow
+                    key={product.id}
+                    className="border-b border-border hover:bg-muted/30 transition-smooth"
+                  >
+                    <TableCell className="font-medium">{product.sku}</TableCell>
+                    <TableCell>{product.title}</TableCell>
+                    <TableCell>{product.category?.title || "-"}</TableCell>
+                    <TableCell>{product.brand?.title || "-"}</TableCell>
+                    <TableCell>Rs. {product.price.toFixed(2)}</TableCell>
+                    <TableCell>
+                      {getTotalStock(product)} {product.unit}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(product)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(product)}
+                          className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                          title="Edit product"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(product.id)}
+                          className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                          title="Delete product"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

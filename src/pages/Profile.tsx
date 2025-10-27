@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { User, Mail, Phone, Shield, Edit, Save, X } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  Shield,
+  Edit,
+  Save,
+  X,
+  Building2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,9 +22,9 @@ export default function Profile() {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || "",
+    fullName: user?.name || "",
     email: user?.email || "",
-    phone: user?.phone || "",
+    phone: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,9 +54,9 @@ export default function Profile() {
 
   const handleCancel = () => {
     setFormData({
-      fullName: user?.fullName || "",
+      fullName: user?.name || "",
       email: user?.email || "",
-      phone: user?.phone || "",
+      phone: "",
     });
     setIsEditing(false);
   };
@@ -85,7 +94,7 @@ export default function Profile() {
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-24 w-24">
                 <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                  {user?.fullName
+                  {user?.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -93,7 +102,7 @@ export default function Profile() {
                 </AvatarFallback>
               </Avatar>
               <div className="text-center space-y-1">
-                <h3 className="font-semibold text-lg">{user?.fullName}</h3>
+                <h3 className="font-semibold text-lg">{user?.name}</h3>
                 <Badge className={getRoleBadgeColor(user?.role || "")}>
                   {user?.role}
                 </Badge>
@@ -109,10 +118,14 @@ export default function Profile() {
                   {user?.email}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{user?.phone}</span>
-              </div>
+              {user?.branch && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {user.branch.title}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-3 text-sm">
                 <Shield className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">

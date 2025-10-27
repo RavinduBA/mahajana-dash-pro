@@ -6,6 +6,7 @@ import {
   Tag,
   Megaphone,
   Bell,
+  Users,
   LogOut,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
@@ -32,11 +33,12 @@ const menuItems = [
   { title: "Brands", url: "/brands", icon: Tag },
   { title: "Promotions", url: "/promotions", icon: Megaphone },
   { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "Staff Management", url: "/staff", icon: Users },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const isCollapsed = state === "collapsed";
 
   return (
@@ -70,6 +72,23 @@ export function AppSidebar() {
             </div>
           )}
         </div>
+
+        {/* Welcome Message */}
+        {!isCollapsed && user && (
+          <div className="px-5 pb-4">
+            <div className="rounded-lg bg-primary/10 dark:bg-primary/20 p-3 border border-primary/20">
+              <p className="text-xs text-muted-foreground mb-1">
+                Welcome back,
+              </p>
+              <p className="font-semibold text-sm text-sidebar-foreground truncate">
+                {user.name}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 capitalize">
+                {user.role}
+              </p>
+            </div>
+          </div>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel className={isCollapsed ? "sr-only" : ""}>

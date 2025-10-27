@@ -6,18 +6,20 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Authentication is temporarily disabled - always allow access
-  // Backend authentication will be implemented later
+  console.log("🛡️ ProtectedRoute check:", { isLoading, isAuthenticated, user });
+
+  // Show loading screen while checking authentication
   if (isLoading) {
+    console.log("⏳ ProtectedRoute: Still loading...");
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <img
             src="/MahajanaSuper.jpg"
             alt="Mahajana Super"
-            className="h-12 w-12 rounded-lg object-cover mx-auto"
+            className="h-12 w-12 rounded-lg object-cover mx-auto animate-pulse"
           />
           <p className="text-muted-foreground">Loading...</p>
         </div>
@@ -25,6 +27,13 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Temporarily always return children (no authentication check)
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    console.log("❌ ProtectedRoute: Not authenticated, redirecting to login");
+    return <Navigate to="/login" replace />;
+  }
+
+  // User is authenticated, render protected content
+  console.log("✅ ProtectedRoute: Authenticated, rendering content");
   return <>{children}</>;
 }
