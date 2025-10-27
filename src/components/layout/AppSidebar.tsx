@@ -1,12 +1,12 @@
-import { 
-  LayoutDashboard, 
-  Package, 
-  FolderTree, 
-  Building2, 
-  Tag, 
-  Megaphone, 
+import {
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  Building2,
+  Tag,
+  Megaphone,
   Bell,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
@@ -40,25 +40,33 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar className="border-r border-border bg-card">
+    <Sidebar className="border-r border-sidebar-border bg-sidebar">
       <SidebarContent>
         <div className="px-3 py-4">
           {!isCollapsed && (
             <div className="flex items-center gap-2 px-2 mb-6">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">MS</span>
-              </div>
+              <img
+                src="/MahajanaSuper.jpg"
+                alt="Mahajana Super"
+                className="h-12 w-12 rounded-lg object-cover"
+              />
               <div className="flex flex-col">
-                <span className="font-semibold text-sm text-foreground">Mahajana Super</span>
-                <span className="text-xs text-muted-foreground">Admin Panel</span>
+                <span className="font-semibold text-sm text-sidebar-foreground">
+                  Mahajana Super
+                </span>
+                <span className="text-xs text-sidebar-foreground/70">
+                  Admin Panel
+                </span>
               </div>
             </div>
           )}
           {isCollapsed && (
             <div className="flex justify-center mb-6">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">MS</span>
-              </div>
+              <img
+                src="/MahajanaSuper.jpg"
+                alt="Mahajana Super"
+                className="h-12 w-12 rounded-lg object-cover"
+              />
             </div>
           )}
         </div>
@@ -71,22 +79,20 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="transition-smooth hover:bg-accent">
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/"}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 rounded-lg px-3 py-2 ${
-                          isActive
-                            ? "bg-primary text-primary-foreground font-medium"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`
-                      }
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
+                  <NavLink
+                    to={item.url}
+                    end={item.url === "/"}
+                    className={({ isActive }) =>
+                      `flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-smooth ${
+                        isActive
+                          ? "bg-primary text-primary-foreground font-medium"
+                          : "!text-black dark:!text-white hover:bg-sidebar-accent hover:!text-black dark:hover:!text-white"
+                      }`
+                    }
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    {!isCollapsed && <span>{item.title}</span>}
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -94,10 +100,10 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3">
+      <SidebarFooter className="border-t border-sidebar-border p-3">
         <Button
           variant="ghost"
-          className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-accent transition-smooth"
+          className="w-full justify-start text-black dark:text-white hover:bg-sidebar-accent transition-smooth"
           size={isCollapsed ? "icon" : "default"}
           onClick={logout}
         >

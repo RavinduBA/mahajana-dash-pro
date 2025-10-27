@@ -48,17 +48,17 @@ All colors MUST be HSL.
     --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 0 0% 0%;
 
     --sidebar-primary: 240 5.9% 10%;
 
     --sidebar-primary-foreground: 0 0% 98%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 0 0% 96%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 0 0% 0%;
 
     --sidebar-border: 220 13% 91%;
 
@@ -66,22 +66,22 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 215 28% 17%;
+    --background: 220 25% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 215 28% 20%;
+    --card: 220 25% 10%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 215 28% 20%;
+    --popover: 220 25% 10%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 207 90% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 28% 25%;
+    --secondary: 220 25% 15%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 28% 25%;
+    --muted: 220 25% 15%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 207 90% 25%;
@@ -96,16 +96,16 @@ All colors MUST be HSL.
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 28% 30%;
-    --input: 215 28% 30%;
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
     --ring: 207 90% 54%;
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 220 25% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 220 25% 15%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 220 25% 20%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -132,5 +132,44 @@ All colors MUST be HSL.
   
   .shadow-card-hover {
     box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Custom Scrollbar Styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.2);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.4);
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+  }
+
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  /* Firefox Scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.2) transparent;
+  }
+
+  .dark .scrollbar-thin {
+    scrollbar-color: hsl(var(--primary) / 0.3) transparent;
   }
 }

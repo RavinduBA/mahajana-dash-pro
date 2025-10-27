@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
@@ -13,7 +19,11 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    rememberMe: boolean
+  ) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -30,8 +40,15 @@ interface RegisterData {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Default mock user - always authenticated for now (backend will be implemented later)
+  const [user, setUser] = useState<User | null>({
+    id: "1",
+    fullName: "Admin User",
+    email: "admin@mahajana.com",
+    phone: "0771234567",
+    role: "Admin",
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,11 +56,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+    } else {
+      // Set default user if none exists
+      const defaultUser = {
+        id: "1",
+        fullName: "Admin User",
+        email: "admin@mahajana.com",
+        phone: "0771234567",
+        role: "Admin" as const,
+      };
+      setUser(defaultUser);
+      localStorage.setItem("user", JSON.stringify(defaultUser));
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string, rememberMe: boolean) => {
+  const login = async (
+    email: string,
+    password: string,
+    rememberMe: boolean
+  ) => {
     setIsLoading(true);
     try {
       // Simulate API call
@@ -114,8 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
+    // For now, just navigate without clearing user (auth disabled temporarily)
     toast({
       title: "Logged out",
       description: "You have been logged out successfully.",

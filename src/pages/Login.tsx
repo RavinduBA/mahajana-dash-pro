@@ -12,7 +12,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
   const { login, isLoading } = useAuth();
 
   const validateForm = () => {
@@ -48,9 +50,11 @@ export default function Login() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-2xl">MS</span>
-            </div>
+            <img
+              src="/MahajanaSuper.jpg"
+              alt="Mahajana Super"
+              className="h-24 w-24 rounded-lg object-cover shadow-lg"
+            />
           </div>
           <h1 className="text-3xl font-bold text-foreground">Admin Login</h1>
           <p className="text-muted-foreground">
@@ -84,7 +88,9 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={errors.password ? "border-destructive pr-10" : "pr-10"}
+                  className={
+                    errors.password ? "border-destructive pr-10" : "pr-10"
+                  }
                 />
                 <button
                   type="button"
@@ -123,8 +129,13 @@ export default function Login() {
           </form>
 
           <div className="mt-4 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/register" className="text-primary hover:underline font-medium">
+            <span className="text-muted-foreground">
+              Don't have an account?{" "}
+            </span>
+            <Link
+              to="/register"
+              className="text-primary hover:underline font-medium"
+            >
               Register here
             </Link>
           </div>
