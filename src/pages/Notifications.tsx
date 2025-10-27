@@ -145,8 +145,8 @@ export default function Notifications() {
               Compose Notification
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
                 Compose New Notification
@@ -156,224 +156,233 @@ export default function Notifications() {
                 or SMS.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Notification Title *</Label>
-                <Input
-                  id="title"
-                  placeholder="Weekend Sale Alert"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="message">Message *</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Your notification message here..."
-                  rows={4}
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.message.length} / 500 characters
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+              <form
+                id="notification-form"
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 <div className="space-y-2">
-                  <Label htmlFor="type">Notification Type *</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, type: value })
+                  <Label htmlFor="title">Notification Title *</Label>
+                  <Input
+                    id="title"
+                    placeholder="Weekend Sale Alert"
+                    value={formData.title}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="announcement">Announcement</SelectItem>
-                      <SelectItem value="promotion">Promotion</SelectItem>
-                      <SelectItem value="order">Order Update</SelectItem>
-                      <SelectItem value="alert">Alert/Warning</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    required
+                  />
                 </div>
+
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="targetAudience"
-                    className="flex items-center gap-1"
-                  >
-                    <Users className="h-3 w-3" />
-                    Target Audience *
-                  </Label>
-                  <Select
-                    value={formData.targetAudience}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, targetAudience: value })
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Your notification message here..."
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Users</SelectItem>
-                      <SelectItem value="customers">Customers Only</SelectItem>
-                      <SelectItem value="vip">VIP Customers</SelectItem>
-                      <SelectItem value="newUsers">New Users</SelectItem>
-                      <SelectItem value="inactive">Inactive Users</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {formData.message.length} / 500 characters
+                  </p>
                 </div>
-              </div>
-
-              <div className="space-y-3 p-4 border rounded-lg">
-                <h4 className="font-semibold text-sm">Delivery Channels</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sendPush"
-                      checked={formData.sendPush}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          sendPush: checked as boolean,
-                        })
-                      }
-                    />
-                    <Label htmlFor="sendPush" className="cursor-pointer">
-                      Push Notification (App)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sendEmail"
-                      checked={formData.sendEmail}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          sendEmail: checked as boolean,
-                        })
-                      }
-                    />
-                    <Label htmlFor="sendEmail" className="cursor-pointer">
-                      Email Notification
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="sendSMS"
-                      checked={formData.sendSMS}
-                      onCheckedChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          sendSMS: checked as boolean,
-                        })
-                      }
-                    />
-                    <Label htmlFor="sendSMS" className="cursor-pointer">
-                      SMS Notification
-                    </Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t">
-                <h4 className="font-semibold text-sm">Advanced Options</h4>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="scheduledDate">
-                      Schedule Date (Optional)
-                    </Label>
-                    <Input
-                      id="scheduledDate"
-                      type="date"
-                      value={formData.scheduledDate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          scheduledDate: e.target.value,
-                        })
+                    <Label htmlFor="type">Notification Type *</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, type: value })
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="announcement">
+                          Announcement
+                        </SelectItem>
+                        <SelectItem value="promotion">Promotion</SelectItem>
+                        <SelectItem value="order">Order Update</SelectItem>
+                        <SelectItem value="alert">Alert/Warning</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="scheduledTime">Schedule Time</Label>
-                    <Input
-                      id="scheduledTime"
-                      type="time"
-                      value={formData.scheduledTime}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          scheduledTime: e.target.value,
-                        })
+                    <Label
+                      htmlFor="targetAudience"
+                      className="flex items-center gap-1"
+                    >
+                      <Users className="h-3 w-3" />
+                      Target Audience *
+                    </Label>
+                    <Select
+                      value={formData.targetAudience}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, targetAudience: value })
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Users</SelectItem>
+                        <SelectItem value="customers">
+                          Customers Only
+                        </SelectItem>
+                        <SelectItem value="vip">VIP Customers</SelectItem>
+                        <SelectItem value="newUsers">New Users</SelectItem>
+                        <SelectItem value="inactive">Inactive Users</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-                  <Input
-                    id="imageUrl"
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    value={formData.imageUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, imageUrl: e.target.value })
-                    }
-                  />
+                <div className="space-y-3 p-4 border rounded-lg">
+                  <h4 className="font-semibold text-sm">Delivery Channels</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sendPush"
+                        checked={formData.sendPush}
+                        onCheckedChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            sendPush: checked as boolean,
+                          })
+                        }
+                      />
+                      <Label htmlFor="sendPush" className="cursor-pointer">
+                        Push Notification (App)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sendEmail"
+                        checked={formData.sendEmail}
+                        onCheckedChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            sendEmail: checked as boolean,
+                          })
+                        }
+                      />
+                      <Label htmlFor="sendEmail" className="cursor-pointer">
+                        Email Notification
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sendSMS"
+                        checked={formData.sendSMS}
+                        onCheckedChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            sendSMS: checked as boolean,
+                          })
+                        }
+                      />
+                      <Label htmlFor="sendSMS" className="cursor-pointer">
+                        SMS Notification
+                      </Label>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="actionUrl">Action URL (Optional)</Label>
-                  <Input
-                    id="actionUrl"
-                    type="url"
-                    placeholder="https://mahajana.lk/promotions"
-                    value={formData.actionUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, actionUrl: e.target.value })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    URL to open when notification is clicked
-                  </p>
-                </div>
-              </div>
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-semibold text-sm">Advanced Options</h4>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsComposeDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-primary"
-                  disabled={
-                    !formData.sendPush &&
-                    !formData.sendEmail &&
-                    !formData.sendSMS
-                  }
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  {formData.scheduledDate ? "Schedule" : "Send Now"}
-                </Button>
-              </DialogFooter>
-            </form>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduledDate">
+                        Schedule Date (Optional)
+                      </Label>
+                      <Input
+                        id="scheduledDate"
+                        type="date"
+                        value={formData.scheduledDate}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scheduledDate: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="scheduledTime">Schedule Time</Label>
+                      <Input
+                        id="scheduledTime"
+                        type="time"
+                        value={formData.scheduledTime}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            scheduledTime: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="imageUrl">Image URL (Optional)</Label>
+                    <Input
+                      id="imageUrl"
+                      type="url"
+                      placeholder="https://example.com/image.jpg"
+                      value={formData.imageUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, imageUrl: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="actionUrl">Action URL (Optional)</Label>
+                    <Input
+                      id="actionUrl"
+                      type="url"
+                      placeholder="https://mahajana.lk/promotions"
+                      value={formData.actionUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, actionUrl: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      URL to open when notification is clicked
+                    </p>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border flex-shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsComposeDialogOpen(false)}
+                className="hover:bg-accent transition-all duration-200"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="notification-form"
+                className="bg-primary hover:bg-primary/90 transition-all duration-200"
+                disabled={
+                  !formData.sendPush && !formData.sendEmail && !formData.sendSMS
+                }
+              >
+                <Send className="mr-2 h-4 w-4" />
+                {formData.scheduledDate ? "Schedule" : "Send Now"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -442,11 +451,11 @@ export default function Notifications() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-primary hover:bg-accent transition-smooth"
+                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                         title="View Details"
                       >
                         <Eye className="h-4 w-4" />
@@ -454,7 +463,7 @@ export default function Notifications() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10 transition-smooth"
+                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                         title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />

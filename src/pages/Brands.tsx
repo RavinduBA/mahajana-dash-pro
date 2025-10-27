@@ -123,8 +123,8 @@ export default function Brands() {
               Add Brand
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5" />
                 Add New Brand
@@ -133,147 +133,161 @@ export default function Brands() {
                 Add a new brand to your product catalog.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Brand Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="Anchor"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug *</Label>
-                  <Input
-                    id="slug"
-                    placeholder="anchor"
-                    value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Brand description..."
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country of Origin</Label>
-                  <Input
-                    id="country"
-                    placeholder="Sri Lanka"
-                    value={formData.country}
-                    onChange={(e) =>
-                      setFormData({ ...formData, country: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website" className="flex items-center gap-1">
-                    <ExternalLink className="h-3 w-3" />
-                    Website
-                  </Label>
-                  <Input
-                    id="website"
-                    type="url"
-                    placeholder="https://brand.com"
-                    value={formData.website}
-                    onChange={(e) =>
-                      setFormData({ ...formData, website: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="logo">Brand Logo</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        logo: e.target.files?.[0] || null,
-                      })
-                    }
-                    className="cursor-pointer"
-                  />
-                  <Upload className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Recommended: Square logo, PNG format
-                </p>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t">
-                <h4 className="font-semibold text-sm">Contact Information</h4>
+            <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+              <form
+                id="brand-form"
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contactEmail">Email</Label>
+                    <Label htmlFor="name">Brand Name *</Label>
                     <Input
-                      id="contactEmail"
-                      type="email"
-                      placeholder="contact@brand.com"
-                      value={formData.contactEmail}
+                      id="name"
+                      placeholder="Anchor"
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          contactEmail: e.target.value,
-                        })
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="slug">Slug *</Label>
+                    <Input
+                      id="slug"
+                      placeholder="anchor"
+                      value={formData.slug}
+                      onChange={(e) =>
+                        setFormData({ ...formData, slug: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Brand description..."
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country of Origin</Label>
+                    <Input
+                      id="country"
+                      placeholder="Sri Lanka"
+                      value={formData.country}
+                      onChange={(e) =>
+                        setFormData({ ...formData, country: e.target.value })
                       }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contactPhone">Phone</Label>
+                    <Label
+                      htmlFor="website"
+                      className="flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Website
+                    </Label>
                     <Input
-                      id="contactPhone"
-                      type="tel"
-                      placeholder="+94 11 234 5678"
-                      value={formData.contactPhone}
+                      id="website"
+                      type="url"
+                      placeholder="https://brand.com"
+                      value={formData.website}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          contactPhone: e.target.value,
-                        })
+                        setFormData({ ...formData, website: e.target.value })
                       }
                     />
                   </div>
                 </div>
-              </div>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-primary">
-                  Create Brand
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-2">
+                  <Label htmlFor="logo">Brand Logo</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          logo: e.target.files?.[0] || null,
+                        })
+                      }
+                      className="cursor-pointer"
+                    />
+                    <Upload className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: Square logo, PNG format
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-semibold text-sm">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactEmail">Email</Label>
+                      <Input
+                        id="contactEmail"
+                        type="email"
+                        placeholder="contact@brand.com"
+                        value={formData.contactEmail}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            contactEmail: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Phone</Label>
+                      <Input
+                        id="contactPhone"
+                        type="tel"
+                        placeholder="+94 11 234 5678"
+                        value={formData.contactPhone}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            contactPhone: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border flex-shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+                className="hover:bg-accent transition-all duration-200"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="brand-form"
+                className="bg-primary hover:bg-primary/90 transition-all duration-200"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Brand
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -329,18 +343,20 @@ export default function Brands() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-primary hover:bg-accent transition-smooth"
+                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                        title="Edit brand"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10 transition-smooth"
+                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                        title="Delete brand"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

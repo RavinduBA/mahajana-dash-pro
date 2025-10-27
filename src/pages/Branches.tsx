@@ -125,8 +125,8 @@ export default function Branches() {
               Add Branch
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
                 Add New Branch
@@ -135,226 +135,246 @@ export default function Branches() {
                 Create a new branch location for your supermarket chain.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Branch Name *</Label>
-                  <Input
-                    id="name"
-                    placeholder="Mahajana Super - Colombo"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="code">Branch Code *</Label>
-                  <Input
-                    id="code"
-                    placeholder="COL001"
-                    value={formData.code}
-                    onChange={(e) =>
-                      setFormData({ ...formData, code: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Street Address *</Label>
-                <Input
-                  id="address"
-                  placeholder="123 Galle Road"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    placeholder="Colombo"
-                    value={formData.city}
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="district">District *</Label>
-                  <Input
-                    id="district"
-                    placeholder="Colombo"
-                    value={formData.district}
-                    onChange={(e) =>
-                      setFormData({ ...formData, district: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code</Label>
-                  <Input
-                    id="postalCode"
-                    placeholder="00300"
-                    value={formData.postalCode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, postalCode: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-1">
-                    <Phone className="h-3 w-3" />
-                    Phone Number *
-                  </Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="0112345678"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="colombo@mahajana.lk"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="manager">Branch Manager</Label>
-                <Input
-                  id="manager"
-                  placeholder="John Silva"
-                  value={formData.manager}
-                  onChange={(e) =>
-                    setFormData({ ...formData, manager: e.target.value })
-                  }
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="openingTime"
-                    className="flex items-center gap-1"
-                  >
-                    <Clock className="h-3 w-3" />
-                    Opening Time
-                  </Label>
-                  <Input
-                    id="openingTime"
-                    type="time"
-                    value={formData.openingTime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, openingTime: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="closingTime"
-                    className="flex items-center gap-1"
-                  >
-                    <Clock className="h-3 w-3" />
-                    Closing Time
-                  </Label>
-                  <Input
-                    id="closingTime"
-                    type="time"
-                    value={formData.closingTime}
-                    onChange={(e) =>
-                      setFormData({ ...formData, closingTime: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4 pt-4 border-t">
-                <h4 className="font-semibold text-sm flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  Location Coordinates (for map display)
-                </h4>
+            <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+              <form
+                id="branch-form"
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude</Label>
+                    <Label htmlFor="name">Branch Name *</Label>
                     <Input
-                      id="latitude"
-                      type="number"
-                      step="any"
-                      placeholder="6.9271"
-                      value={formData.latitude}
+                      id="name"
+                      placeholder="Mahajana Super - Colombo"
+                      value={formData.name}
                       onChange={(e) =>
-                        setFormData({ ...formData, latitude: e.target.value })
+                        setFormData({ ...formData, name: e.target.value })
                       }
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude</Label>
+                    <Label htmlFor="code">Branch Code *</Label>
                     <Input
-                      id="longitude"
-                      type="number"
-                      step="any"
-                      placeholder="79.8612"
-                      value={formData.longitude}
+                      id="code"
+                      placeholder="COL001"
+                      value={formData.code}
                       onChange={(e) =>
-                        setFormData({ ...formData, longitude: e.target.value })
+                        setFormData({ ...formData, code: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Street Address *</Label>
+                  <Input
+                    id="address"
+                    placeholder="123 Galle Road"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      placeholder="Colombo"
+                      value={formData.city}
+                      onChange={(e) =>
+                        setFormData({ ...formData, city: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="district">District *</Label>
+                    <Input
+                      id="district"
+                      placeholder="Colombo"
+                      value={formData.district}
+                      onChange={(e) =>
+                        setFormData({ ...formData, district: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal Code</Label>
+                    <Input
+                      id="postalCode"
+                      placeholder="00300"
+                      value={formData.postalCode}
+                      onChange={(e) =>
+                        setFormData({ ...formData, postalCode: e.target.value })
                       }
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Additional Notes</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Any additional information about this branch..."
-                  rows={2}
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="flex items-center gap-1">
+                      <Phone className="h-3 w-3" />
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="0112345678"
+                      value={formData.phone}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="colombo@mahajana.lk"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsAddDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="bg-primary">
-                  Create Branch
-                </Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-2">
+                  <Label htmlFor="manager">Branch Manager</Label>
+                  <Input
+                    id="manager"
+                    placeholder="John Silva"
+                    value={formData.manager}
+                    onChange={(e) =>
+                      setFormData({ ...formData, manager: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="openingTime"
+                      className="flex items-center gap-1"
+                    >
+                      <Clock className="h-3 w-3" />
+                      Opening Time
+                    </Label>
+                    <Input
+                      id="openingTime"
+                      type="time"
+                      value={formData.openingTime}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          openingTime: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="closingTime"
+                      className="flex items-center gap-1"
+                    >
+                      <Clock className="h-3 w-3" />
+                      Closing Time
+                    </Label>
+                    <Input
+                      id="closingTime"
+                      type="time"
+                      value={formData.closingTime}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          closingTime: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-semibold text-sm flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    Location Coordinates (for map display)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="latitude">Latitude</Label>
+                      <Input
+                        id="latitude"
+                        type="number"
+                        step="any"
+                        placeholder="6.9271"
+                        value={formData.latitude}
+                        onChange={(e) =>
+                          setFormData({ ...formData, latitude: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="longitude">Longitude</Label>
+                      <Input
+                        id="longitude"
+                        type="number"
+                        step="any"
+                        placeholder="79.8612"
+                        value={formData.longitude}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            longitude: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Additional Notes</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Any additional information about this branch..."
+                    rows={2}
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                  />
+                </div>
+              </form>
+            </div>
+            <DialogFooter className="px-6 pb-6 pt-4 border-t border-border flex-shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsAddDialogOpen(false)}
+                className="hover:bg-accent transition-all duration-200"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="branch-form"
+                className="bg-primary hover:bg-primary/90 transition-all duration-200"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Branch
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
@@ -408,18 +428,20 @@ export default function Branches() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-primary hover:bg-accent transition-smooth"
+                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                        title="Edit branch"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:bg-destructive/10 transition-smooth"
+                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                        title="Delete branch"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

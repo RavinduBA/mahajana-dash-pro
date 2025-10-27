@@ -166,8 +166,8 @@ export default function Promotions() {
                 Add Voucher
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+              <DialogHeader className="px-6 pt-6 flex-shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Ticket className="h-5 w-5" />
                   Create New Voucher
@@ -176,147 +176,160 @@ export default function Promotions() {
                   Generate a discount voucher code for customers.
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleVoucherSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="code">Voucher Code *</Label>
-                  <Input
-                    id="code"
-                    placeholder="SAVE100"
-                    value={voucherFormData.code}
-                    onChange={(e) =>
-                      setVoucherFormData({
-                        ...voucherFormData,
-                        code: e.target.value.toUpperCase(),
-                      })
-                    }
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+              <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
+                <form
+                  id="voucher-form"
+                  onSubmit={handleVoucherSubmit}
+                  className="space-y-4"
+                >
                   <div className="space-y-2">
-                    <Label htmlFor="voucherDiscountType">Discount Type *</Label>
-                    <Select
-                      value={voucherFormData.discountType}
-                      onValueChange={(value) =>
-                        setVoucherFormData({
-                          ...voucherFormData,
-                          discountType: value,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fixed">
-                          Fixed Amount (LKR)
-                        </SelectItem>
-                        <SelectItem value="percentage">
-                          Percentage (%)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="voucherDiscountValue">
-                      Discount Value *
-                    </Label>
+                    <Label htmlFor="code">Voucher Code *</Label>
                     <Input
-                      id="voucherDiscountValue"
-                      type="number"
-                      placeholder="100"
-                      value={voucherFormData.discountValue}
+                      id="code"
+                      placeholder="SAVE100"
+                      value={voucherFormData.code}
                       onChange={(e) =>
                         setVoucherFormData({
                           ...voucherFormData,
-                          discountValue: e.target.value,
+                          code: e.target.value.toUpperCase(),
                         })
                       }
                       required
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="voucherDiscountType">
+                        Discount Type *
+                      </Label>
+                      <Select
+                        value={voucherFormData.discountType}
+                        onValueChange={(value) =>
+                          setVoucherFormData({
+                            ...voucherFormData,
+                            discountType: value,
+                          })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fixed">
+                            Fixed Amount (LKR)
+                          </SelectItem>
+                          <SelectItem value="percentage">
+                            Percentage (%)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="voucherDiscountValue">
+                        Discount Value *
+                      </Label>
+                      <Input
+                        id="voucherDiscountValue"
+                        type="number"
+                        placeholder="100"
+                        value={voucherFormData.discountValue}
+                        onChange={(e) =>
+                          setVoucherFormData({
+                            ...voucherFormData,
+                            discountValue: e.target.value,
+                          })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="voucherMinPurchase">
+                        Min Purchase (LKR)
+                      </Label>
+                      <Input
+                        id="voucherMinPurchase"
+                        type="number"
+                        placeholder="1000"
+                        value={voucherFormData.minPurchase}
+                        onChange={(e) =>
+                          setVoucherFormData({
+                            ...voucherFormData,
+                            minPurchase: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="maxUses">Max Uses</Label>
+                      <Input
+                        id="maxUses"
+                        type="number"
+                        placeholder="100"
+                        value={voucherFormData.maxUses}
+                        onChange={(e) =>
+                          setVoucherFormData({
+                            ...voucherFormData,
+                            maxUses: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="voucherMinPurchase">
-                      Min Purchase (LKR)
-                    </Label>
+                    <Label htmlFor="voucherExpiryDate">Expiry Date</Label>
                     <Input
-                      id="voucherMinPurchase"
-                      type="number"
-                      placeholder="1000"
-                      value={voucherFormData.minPurchase}
+                      id="voucherExpiryDate"
+                      type="date"
+                      value={voucherFormData.expiryDate}
                       onChange={(e) =>
                         setVoucherFormData({
                           ...voucherFormData,
-                          minPurchase: e.target.value,
+                          expiryDate: e.target.value,
                         })
                       }
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="maxUses">Max Uses</Label>
-                    <Input
-                      id="maxUses"
-                      type="number"
-                      placeholder="100"
-                      value={voucherFormData.maxUses}
+                    <Label htmlFor="voucherDescription">Description</Label>
+                    <Textarea
+                      id="voucherDescription"
+                      placeholder="Voucher terms and conditions..."
+                      rows={2}
+                      value={voucherFormData.description}
                       onChange={(e) =>
                         setVoucherFormData({
                           ...voucherFormData,
-                          maxUses: e.target.value,
+                          description: e.target.value,
                         })
                       }
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="voucherExpiryDate">Expiry Date</Label>
-                  <Input
-                    id="voucherExpiryDate"
-                    type="date"
-                    value={voucherFormData.expiryDate}
-                    onChange={(e) =>
-                      setVoucherFormData({
-                        ...voucherFormData,
-                        expiryDate: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="voucherDescription">Description</Label>
-                  <Textarea
-                    id="voucherDescription"
-                    placeholder="Voucher terms and conditions..."
-                    rows={2}
-                    value={voucherFormData.description}
-                    onChange={(e) =>
-                      setVoucherFormData({
-                        ...voucherFormData,
-                        description: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsVoucherDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="bg-primary">
-                    Create Voucher
-                  </Button>
-                </DialogFooter>
-              </form>
+                </form>
+              </div>
+              <DialogFooter className="px-6 pb-6 pt-4 border-t border-border flex-shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsVoucherDialogOpen(false)}
+                  className="hover:bg-accent transition-all duration-200"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  form="voucher-form"
+                  className="bg-primary hover:bg-primary/90 transition-all duration-200"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Voucher
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
 
@@ -327,8 +340,8 @@ export default function Promotions() {
                 Add Offer
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+              <DialogHeader className="px-6 pt-6 flex-shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5" />
                   Create New Offer
@@ -337,352 +350,377 @@ export default function Promotions() {
                   Create promotional offers - general discounts or BOGO deals.
                 </DialogDescription>
               </DialogHeader>
+              <div className="flex-1 overflow-y-auto px-6 scrollbar-thin">
+                <Tabs
+                  value={offerType}
+                  onValueChange={(v) => setOfferType(v as "general" | "bogo")}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger
+                      value="general"
+                      className="flex items-center gap-2"
+                    >
+                      <Percent className="h-4 w-4" />
+                      General Offer
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="bogo"
+                      className="flex items-center gap-2"
+                    >
+                      <Gift className="h-4 w-4" />
+                      BOGO Offer
+                    </TabsTrigger>
+                  </TabsList>
 
-              <Tabs
-                value={offerType}
-                onValueChange={(v) => setOfferType(v as "general" | "bogo")}
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger
-                    value="general"
-                    className="flex items-center gap-2"
-                  >
-                    <Percent className="h-4 w-4" />
-                    General Offer
-                  </TabsTrigger>
-                  <TabsTrigger value="bogo" className="flex items-center gap-2">
-                    <Gift className="h-4 w-4" />
-                    BOGO Offer
-                  </TabsTrigger>
-                </TabsList>
-
-                <form onSubmit={handleOfferSubmit}>
-                  <TabsContent value="general" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Offer Title *</Label>
-                      <Input
-                        id="title"
-                        placeholder="Weekend Sale"
-                        value={offerFormData.title}
-                        onChange={(e) =>
-                          setOfferFormData({
-                            ...offerFormData,
-                            title: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Offer details..."
-                        rows={2}
-                        value={offerFormData.description}
-                        onChange={(e) =>
-                          setOfferFormData({
-                            ...offerFormData,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                  <form id="general-offer-form" onSubmit={handleOfferSubmit}>
+                    <TabsContent value="general" className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="discountType">Discount Type *</Label>
-                        <Select
-                          value={offerFormData.discountType}
-                          onValueChange={(value) =>
-                            setOfferFormData({
-                              ...offerFormData,
-                              discountType: value,
-                            })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage">
-                              Percentage (%)
-                            </SelectItem>
-                            <SelectItem value="fixed">
-                              Fixed Amount (LKR)
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="discountValue">Discount Value *</Label>
+                        <Label htmlFor="title">Offer Title *</Label>
                         <Input
-                          id="discountValue"
-                          type="number"
-                          placeholder="20"
-                          value={offerFormData.discountValue}
+                          id="title"
+                          placeholder="Weekend Sale"
+                          value={offerFormData.title}
                           onChange={(e) =>
                             setOfferFormData({
                               ...offerFormData,
-                              discountValue: e.target.value,
+                              title: e.target.value,
                             })
                           }
                           required
                         />
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="minPurchase">Min Purchase (LKR)</Label>
-                        <Input
-                          id="minPurchase"
-                          type="number"
-                          placeholder="1000"
-                          value={offerFormData.minPurchase}
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Offer details..."
+                          rows={2}
+                          value={offerFormData.description}
                           onChange={(e) =>
                             setOfferFormData({
                               ...offerFormData,
-                              minPurchase: e.target.value,
+                              description: e.target.value,
                             })
                           }
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="maxDiscount">Max Discount (LKR)</Label>
-                        <Input
-                          id="maxDiscount"
-                          type="number"
-                          placeholder="500"
-                          value={offerFormData.maxDiscount}
-                          onChange={(e) =>
-                            setOfferFormData({
-                              ...offerFormData,
-                              maxDiscount: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="startDate"
-                          className="flex items-center gap-1"
-                        >
-                          <Calendar className="h-3 w-3" />
-                          Start Date *
-                        </Label>
-                        <Input
-                          id="startDate"
-                          type="date"
-                          value={offerFormData.startDate}
-                          onChange={(e) =>
-                            setOfferFormData({
-                              ...offerFormData,
-                              startDate: e.target.value,
-                            })
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="endDate"
-                          className="flex items-center gap-1"
-                        >
-                          <Calendar className="h-3 w-3" />
-                          End Date *
-                        </Label>
-                        <Input
-                          id="endDate"
-                          type="date"
-                          value={offerFormData.endDate}
-                          onChange={(e) =>
-                            setOfferFormData({
-                              ...offerFormData,
-                              endDate: e.target.value,
-                            })
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="applicableProducts">
-                        Applicable Products (comma-separated IDs)
-                      </Label>
-                      <Input
-                        id="applicableProducts"
-                        placeholder="1,2,3 or leave empty for all"
-                        value={offerFormData.applicableProducts}
-                        onChange={(e) =>
-                          setOfferFormData({
-                            ...offerFormData,
-                            applicableProducts: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsOfferDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" className="bg-primary">
-                        Create Offer
-                      </Button>
-                    </DialogFooter>
-                  </TabsContent>
-
-                  <TabsContent value="bogo" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="bogoTitle">BOGO Offer Title *</Label>
-                      <Input
-                        id="bogoTitle"
-                        placeholder="Buy 1 Get 1 Free"
-                        value={offerFormData.title}
-                        onChange={(e) =>
-                          setOfferFormData({
-                            ...offerFormData,
-                            title: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-4 p-4 border rounded-lg">
-                      <h4 className="font-semibold text-sm">Buy Product</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="buyProductId">Product ID *</Label>
-                          <Input
-                            id="buyProductId"
-                            placeholder="123"
-                            value={offerFormData.buyProductId}
-                            onChange={(e) =>
+                          <Label htmlFor="discountType">Discount Type *</Label>
+                          <Select
+                            value={offerFormData.discountType}
+                            onValueChange={(value) =>
                               setOfferFormData({
                                 ...offerFormData,
-                                buyProductId: e.target.value,
+                                discountType: value,
                               })
                             }
-                            required
-                          />
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percentage">
+                                Percentage (%)
+                              </SelectItem>
+                              <SelectItem value="fixed">
+                                Fixed Amount (LKR)
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="buyQuantity">Quantity *</Label>
+                          <Label htmlFor="discountValue">
+                            Discount Value *
+                          </Label>
                           <Input
-                            id="buyQuantity"
+                            id="discountValue"
                             type="number"
-                            placeholder="1"
-                            value={offerFormData.buyQuantity}
+                            placeholder="20"
+                            value={offerFormData.discountValue}
                             onChange={(e) =>
                               setOfferFormData({
                                 ...offerFormData,
-                                buyQuantity: e.target.value,
+                                discountValue: e.target.value,
                               })
                             }
                             required
                           />
                         </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-4 p-4 border rounded-lg">
-                      <h4 className="font-semibold text-sm">
-                        Get Product (Free/Discounted)
-                      </h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="getProductId">Product ID *</Label>
+                          <Label htmlFor="minPurchase">
+                            Min Purchase (LKR)
+                          </Label>
                           <Input
-                            id="getProductId"
-                            placeholder="123"
-                            value={offerFormData.getProductId}
+                            id="minPurchase"
+                            type="number"
+                            placeholder="1000"
+                            value={offerFormData.minPurchase}
                             onChange={(e) =>
                               setOfferFormData({
                                 ...offerFormData,
-                                getProductId: e.target.value,
+                                minPurchase: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="maxDiscount">
+                            Max Discount (LKR)
+                          </Label>
+                          <Input
+                            id="maxDiscount"
+                            type="number"
+                            placeholder="500"
+                            value={offerFormData.maxDiscount}
+                            onChange={(e) =>
+                              setOfferFormData({
+                                ...offerFormData,
+                                maxDiscount: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="startDate"
+                            className="flex items-center gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            Start Date *
+                          </Label>
+                          <Input
+                            id="startDate"
+                            type="date"
+                            value={offerFormData.startDate}
+                            onChange={(e) =>
+                              setOfferFormData({
+                                ...offerFormData,
+                                startDate: e.target.value,
                               })
                             }
                             required
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="getQuantity">Quantity *</Label>
+                          <Label
+                            htmlFor="endDate"
+                            className="flex items-center gap-1"
+                          >
+                            <Calendar className="h-3 w-3" />
+                            End Date *
+                          </Label>
                           <Input
-                            id="getQuantity"
-                            type="number"
-                            placeholder="1"
-                            value={offerFormData.getQuantity}
+                            id="endDate"
+                            type="date"
+                            value={offerFormData.endDate}
                             onChange={(e) =>
                               setOfferFormData({
                                 ...offerFormData,
-                                getQuantity: e.target.value,
+                                endDate: e.target.value,
                               })
                             }
                             required
                           />
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="bogoStartDate">Start Date *</Label>
+                        <Label htmlFor="applicableProducts">
+                          Applicable Products (comma-separated IDs)
+                        </Label>
                         <Input
-                          id="bogoStartDate"
-                          type="date"
-                          value={offerFormData.startDate}
+                          id="applicableProducts"
+                          placeholder="1,2,3 or leave empty for all"
+                          value={offerFormData.applicableProducts}
                           onChange={(e) =>
                             setOfferFormData({
                               ...offerFormData,
-                              startDate: e.target.value,
+                              applicableProducts: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <DialogFooter className="border-t border-border pt-4 mt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsOfferDialogOpen(false)}
+                          className="hover:bg-accent transition-all duration-200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          form="general-offer-form"
+                          className="bg-primary hover:bg-primary/90 transition-all duration-200"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create Offer
+                        </Button>
+                      </DialogFooter>
+                    </TabsContent>
+                  </form>
+
+                  <form id="bogo-offer-form" onSubmit={handleOfferSubmit}>
+                    <TabsContent value="bogo" className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="bogoTitle">BOGO Offer Title *</Label>
+                        <Input
+                          id="bogoTitle"
+                          placeholder="Buy 1 Get 1 Free"
+                          value={offerFormData.title}
+                          onChange={(e) =>
+                            setOfferFormData({
+                              ...offerFormData,
+                              title: e.target.value,
                             })
                           }
                           required
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="bogoEndDate">End Date *</Label>
-                        <Input
-                          id="bogoEndDate"
-                          type="date"
-                          value={offerFormData.endDate}
-                          onChange={(e) =>
-                            setOfferFormData({
-                              ...offerFormData,
-                              endDate: e.target.value,
-                            })
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
 
-                    <DialogFooter>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setIsOfferDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" className="bg-primary">
-                        Create BOGO Offer
-                      </Button>
-                    </DialogFooter>
-                  </TabsContent>
-                </form>
-              </Tabs>
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold text-sm">Buy Product</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="buyProductId">Product ID *</Label>
+                            <Input
+                              id="buyProductId"
+                              placeholder="123"
+                              value={offerFormData.buyProductId}
+                              onChange={(e) =>
+                                setOfferFormData({
+                                  ...offerFormData,
+                                  buyProductId: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="buyQuantity">Quantity *</Label>
+                            <Input
+                              id="buyQuantity"
+                              type="number"
+                              placeholder="1"
+                              value={offerFormData.buyQuantity}
+                              onChange={(e) =>
+                                setOfferFormData({
+                                  ...offerFormData,
+                                  buyQuantity: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 p-4 border rounded-lg">
+                        <h4 className="font-semibold text-sm">
+                          Get Product (Free/Discounted)
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="getProductId">Product ID *</Label>
+                            <Input
+                              id="getProductId"
+                              placeholder="123"
+                              value={offerFormData.getProductId}
+                              onChange={(e) =>
+                                setOfferFormData({
+                                  ...offerFormData,
+                                  getProductId: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="getQuantity">Quantity *</Label>
+                            <Input
+                              id="getQuantity"
+                              type="number"
+                              placeholder="1"
+                              value={offerFormData.getQuantity}
+                              onChange={(e) =>
+                                setOfferFormData({
+                                  ...offerFormData,
+                                  getQuantity: e.target.value,
+                                })
+                              }
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="bogoStartDate">Start Date *</Label>
+                          <Input
+                            id="bogoStartDate"
+                            type="date"
+                            value={offerFormData.startDate}
+                            onChange={(e) =>
+                              setOfferFormData({
+                                ...offerFormData,
+                                startDate: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="bogoEndDate">End Date *</Label>
+                          <Input
+                            id="bogoEndDate"
+                            type="date"
+                            value={offerFormData.endDate}
+                            onChange={(e) =>
+                              setOfferFormData({
+                                ...offerFormData,
+                                endDate: e.target.value,
+                              })
+                            }
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <DialogFooter className="border-t border-border pt-4 mt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsOfferDialogOpen(false)}
+                          className="hover:bg-accent transition-all duration-200"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          form="bogo-offer-form"
+                          className="bg-primary hover:bg-primary/90 transition-all duration-200"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Create BOGO Offer
+                        </Button>
+                      </DialogFooter>
+                    </TabsContent>
+                  </form>
+                </Tabs>
+              </div>
             </DialogContent>
           </Dialog>
         </div>
@@ -754,18 +792,20 @@ export default function Promotions() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                            title="Edit offer"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive"
+                            className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                            title="Delete offer"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -829,18 +869,20 @@ export default function Promotions() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                            title="Edit voucher"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-destructive"
+                            className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                            title="Delete voucher"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
