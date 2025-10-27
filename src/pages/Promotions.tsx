@@ -98,6 +98,12 @@ export default function Promotions() {
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
   const [isVoucherDialogOpen, setIsVoucherDialogOpen] = useState(false);
   const [offerType, setOfferType] = useState<"general" | "bogo">("general");
+  const [editingOffer, setEditingOffer] = useState<
+    (typeof mockPromotions)[0] | null
+  >(null);
+  const [editingVoucher, setEditingVoucher] = useState<
+    (typeof mockVouchers)[0] | null
+  >(null);
 
   const [offerFormData, setOfferFormData] = useState({
     title: "",
@@ -127,18 +133,66 @@ export default function Promotions() {
     description: "",
   });
 
+  const handleEditOffer = (offer: (typeof mockPromotions)[0]) => {
+    setEditingOffer(offer);
+    setOfferFormData({
+      title: offer.title,
+      description: "",
+      discountType: "percentage",
+      discountValue: offer.discountPercent?.toString() || "",
+      minPurchase: "",
+      maxDiscount: "",
+      startDate: offer.startDate,
+      endDate: offer.endDate,
+      applicableProducts: "",
+      applicableCategories: "",
+      buyProductId: "",
+      buyQuantity: "",
+      getProductId: "",
+      getQuantity: "",
+    });
+    setOfferType(offer.type === "bogo" ? "bogo" : "general");
+    setIsOfferDialogOpen(true);
+  };
+
+  const handleEditVoucher = (voucher: (typeof mockVouchers)[0]) => {
+    setEditingVoucher(voucher);
+    setVoucherFormData({
+      code: voucher.code,
+      discountType: "fixed",
+      discountValue: voucher.discount.toString(),
+      minPurchase: voucher.minPurchase.toString(),
+      maxUses: voucher.maxUses.toString(),
+      expiryDate: "",
+      description: "",
+    });
+    setIsVoucherDialogOpen(true);
+  };
+
   const handleOfferSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API call: POST /admin/offers or POST /admin/offers/bogo
-    console.log("Offer form data:", offerFormData, "Type:", offerType);
+    if (editingOffer) {
+      // API call: PUT /admin/offers/:id
+      console.log("Updating offer:", editingOffer.id, offerFormData);
+    } else {
+      // API call: POST /admin/offers or POST /admin/offers/bogo
+      console.log("Creating new offer:", offerFormData, "Type:", offerType);
+    }
     setIsOfferDialogOpen(false);
+    setEditingOffer(null);
   };
 
   const handleVoucherSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API call: POST /admin/vouchers
-    console.log("Voucher form data:", voucherFormData);
+    if (editingVoucher) {
+      // API call: PUT /admin/vouchers/:id
+      console.log("Updating voucher:", editingVoucher.id, voucherFormData);
+    } else {
+      // API call: POST /admin/vouchers
+      console.log("Creating new voucher:", voucherFormData);
+    }
     setIsVoucherDialogOpen(false);
+    setEditingVoucher(null);
   };
 
   return (
@@ -155,7 +209,21 @@ export default function Promotions() {
         <div className="flex gap-2">
           <Dialog
             open={isVoucherDialogOpen}
-            onOpenChange={setIsVoucherDialogOpen}
+            onOpenChange={(open) => {
+              setIsVoucherDialogOpen(open);
+              if (!open) {
+                setEditingVoucher(null);
+                setVoucherFormData({
+                  code: "",
+                  discountType: "fixed",
+                  discountValue: "",
+                  minPurchase: "",
+                  maxUses: "",
+                  expiryDate: "",
+                  description: "",
+                });
+              }
+            }}
           >
             <DialogTrigger asChild>
               <Button
@@ -170,10 +238,12 @@ export default function Promotions() {
               <DialogHeader className="px-6 pt-6 flex-shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Ticket className="h-5 w-5" />
-                  Create New Voucher
+                  {editingVoucher ? "Edit Voucher" : "Create New Voucher"}
                 </DialogTitle>
                 <DialogDescription>
-                  Generate a discount voucher code for customers.
+                  {editingVoucher
+                    ? "Update the voucher details below."
+                    : "Generate a discount voucher code for customers."}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
@@ -326,14 +396,48 @@ export default function Promotions() {
                   form="voucher-form"
                   className="bg-primary hover:bg-primary/90 transition-all duration-200"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Voucher
+                  {editingVoucher ? (
+                    <>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Update Voucher
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Voucher
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isOfferDialogOpen} onOpenChange={setIsOfferDialogOpen}>
+          <Dialog
+            open={isOfferDialogOpen}
+            onOpenChange={(open) => {
+              setIsOfferDialogOpen(open);
+              if (!open) {
+                setEditingOffer(null);
+                setOfferFormData({
+                  title: "",
+                  description: "",
+                  discountType: "percentage",
+                  discountValue: "",
+                  minPurchase: "",
+                  maxDiscount: "",
+                  startDate: "",
+                  endDate: "",
+                  applicableProducts: "",
+                  applicableCategories: "",
+                  buyProductId: "",
+                  buyQuantity: "",
+                  getProductId: "",
+                  getQuantity: "",
+                });
+                setOfferType("general");
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                 <Plus className="mr-2 h-4 w-4" />
@@ -344,10 +448,12 @@ export default function Promotions() {
               <DialogHeader className="px-6 pt-6 flex-shrink-0">
                 <DialogTitle className="flex items-center gap-2">
                   <Megaphone className="h-5 w-5" />
-                  Create New Offer
+                  {editingOffer ? "Edit Offer" : "Create New Offer"}
                 </DialogTitle>
                 <DialogDescription>
-                  Create promotional offers - general discounts or BOGO deals.
+                  {editingOffer
+                    ? "Update the offer details below."
+                    : "Create promotional offers - general discounts or BOGO deals."}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 overflow-y-auto px-6 scrollbar-thin">
@@ -565,8 +671,17 @@ export default function Promotions() {
                           form="general-offer-form"
                           className="bg-primary hover:bg-primary/90 transition-all duration-200"
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create Offer
+                          {editingOffer ? (
+                            <>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Update Offer
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Create Offer
+                            </>
+                          )}
                         </Button>
                       </DialogFooter>
                     </TabsContent>
@@ -713,8 +828,17 @@ export default function Promotions() {
                           form="bogo-offer-form"
                           className="bg-primary hover:bg-primary/90 transition-all duration-200"
                         >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Create BOGO Offer
+                          {editingOffer ? (
+                            <>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Update BOGO Offer
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Create BOGO Offer
+                            </>
+                          )}
                         </Button>
                       </DialogFooter>
                     </TabsContent>
@@ -798,6 +922,7 @@ export default function Promotions() {
                             size="icon"
                             className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                             title="Edit offer"
+                            onClick={() => handleEditOffer(promo)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -806,6 +931,9 @@ export default function Promotions() {
                             size="icon"
                             className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                             title="Delete offer"
+                            onClick={() =>
+                              console.log("Delete offer:", promo.id)
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -875,6 +1003,7 @@ export default function Promotions() {
                             size="icon"
                             className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                             title="Edit voucher"
+                            onClick={() => handleEditVoucher(voucher)}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -883,6 +1012,9 @@ export default function Promotions() {
                             size="icon"
                             className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                             title="Delete voucher"
+                            onClick={() =>
+                              console.log("Delete voucher:", voucher.id)
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

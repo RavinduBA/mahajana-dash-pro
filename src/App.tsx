@@ -14,6 +14,7 @@ import Branches from "./pages/Branches";
 import Brands from "./pages/Brands";
 import Promotions from "./pages/Promotions";
 import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -35,7 +36,9 @@ const App = () => (
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Dashboard /></DashboardLayout>
+                    <DashboardLayout>
+                      <Dashboard />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -43,7 +46,9 @@ const App = () => (
                 path="/products"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Products /></DashboardLayout>
+                    <DashboardLayout>
+                      <Products />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -51,7 +56,9 @@ const App = () => (
                 path="/categories"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Categories /></DashboardLayout>
+                    <DashboardLayout>
+                      <Categories />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -59,7 +66,9 @@ const App = () => (
                 path="/branches"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Branches /></DashboardLayout>
+                    <DashboardLayout>
+                      <Branches />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -67,7 +76,9 @@ const App = () => (
                 path="/brands"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Brands /></DashboardLayout>
+                    <DashboardLayout>
+                      <Brands />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -75,7 +86,9 @@ const App = () => (
                 path="/promotions"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Promotions /></DashboardLayout>
+                    <DashboardLayout>
+                      <Promotions />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />
@@ -83,7 +96,19 @@ const App = () => (
                 path="/notifications"
                 element={
                   <ProtectedRoute>
-                    <DashboardLayout><Notifications /></DashboardLayout>
+                    <DashboardLayout>
+                      <Notifications />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <Profile />
+                    </DashboardLayout>
                   </ProtectedRoute>
                 }
               />

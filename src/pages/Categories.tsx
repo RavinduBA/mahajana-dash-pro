@@ -78,7 +78,9 @@ const mockCategories = [
 export default function Categories() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<typeof mockCategories[0] | null>(null);
+  const [editingCategory, setEditingCategory] = useState<
+    (typeof mockCategories)[0] | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -89,7 +91,7 @@ export default function Categories() {
     metaDescription: "",
   });
 
-  const handleEdit = (category: typeof mockCategories[0]) => {
+  const handleEdit = (category: (typeof mockCategories)[0]) => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
@@ -136,21 +138,24 @@ export default function Categories() {
             Manage product categories hierarchy
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-          setIsAddDialogOpen(open);
-          if (!open) {
-            setEditingCategory(null);
-            setFormData({
-              name: "",
-              slug: "",
-              parentId: "",
-              description: "",
-              displayOrder: "",
-              metaTitle: "",
-              metaDescription: "",
-            });
-          }
-        }}>
+        <Dialog
+          open={isAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              setEditingCategory(null);
+              setFormData({
+                name: "",
+                slug: "",
+                parentId: "",
+                description: "",
+                displayOrder: "",
+                metaTitle: "",
+                metaDescription: "",
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth">
               <Plus className="mr-2 h-4 w-4" />
@@ -296,8 +301,17 @@ export default function Categories() {
                 form="category-form"
                 className="bg-primary hover:bg-primary/90 transition-all duration-200"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Category
+                {editingCategory ? (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update Category
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Category
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -374,6 +388,7 @@ export default function Categories() {
                         size="icon"
                         className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                         title="Edit category"
+                        onClick={() => handleEdit(category)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -382,6 +397,9 @@ export default function Categories() {
                         size="icon"
                         className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                         title="Delete category"
+                        onClick={() =>
+                          console.log("Delete category:", category.id)
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -79,6 +79,9 @@ const mockBrands = [
 export default function Brands() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<
+    (typeof mockBrands)[0] | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -90,11 +93,32 @@ export default function Brands() {
     contactPhone: "",
   });
 
+  const handleEdit = (brand: (typeof mockBrands)[0]) => {
+    setEditingBrand(brand);
+    setFormData({
+      name: brand.name,
+      slug: brand.slug,
+      description: "",
+      country: brand.country,
+      website: "",
+      logo: null,
+      contactEmail: "",
+      contactPhone: "",
+    });
+    setIsAddDialogOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API call will be implemented here: POST /admin/brands
-    console.log("Brand form data:", formData);
+    if (editingBrand) {
+      // API call will be implemented here: PUT /admin/brands/:id
+      console.log("Updating brand:", editingBrand.id, formData);
+    } else {
+      // API call will be implemented here: POST /admin/brands
+      console.log("Creating new brand:", formData);
+    }
     setIsAddDialogOpen(false);
+    setEditingBrand(null);
     setFormData({
       name: "",
       slug: "",
@@ -116,7 +140,25 @@ export default function Brands() {
           </h1>
           <p className="text-muted-foreground mt-1">Manage product brands</p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog
+          open={isAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              setEditingBrand(null);
+              setFormData({
+                name: "",
+                slug: "",
+                description: "",
+                country: "",
+                website: "",
+                logo: null,
+                contactEmail: "",
+                contactPhone: "",
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth">
               <Plus className="mr-2 h-4 w-4" />
@@ -127,10 +169,12 @@ export default function Brands() {
             <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5" />
-                Add New Brand
+                {editingBrand ? "Edit Brand" : "Add New Brand"}
               </DialogTitle>
               <DialogDescription>
-                Add a new brand to your product catalog.
+                {editingBrand
+                  ? "Update the brand details below."
+                  : "Add a new brand to your product catalog."}
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
@@ -284,8 +328,17 @@ export default function Brands() {
                 form="brand-form"
                 className="bg-primary hover:bg-primary/90 transition-all duration-200"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Brand
+                {editingBrand ? (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update Brand
+                  </>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Brand
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -349,6 +402,7 @@ export default function Brands() {
                         size="icon"
                         className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                         title="Edit brand"
+                        onClick={() => handleEdit(brand)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -357,6 +411,7 @@ export default function Brands() {
                         size="icon"
                         className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                         title="Delete brand"
+                        onClick={() => console.log("Delete brand:", brand.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

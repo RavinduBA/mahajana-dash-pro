@@ -44,17 +44,17 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="px-3 py-4">
           {!isCollapsed && (
-            <div className="flex items-center gap-2 px-2 mb-6">
+            <div className="flex items-center gap-3 px-2 mb-6">
               <img
                 src="/MahajanaSuper.jpg"
                 alt="Mahajana Super"
-                className="h-12 w-12 rounded-lg object-cover"
+                className="h-16 w-16 rounded-lg object-cover"
               />
               <div className="flex flex-col">
-                <span className="font-semibold text-sm text-sidebar-foreground">
+                <span className="font-semibold text-base text-sidebar-foreground">
                   Mahajana Super
                 </span>
-                <span className="text-xs text-sidebar-foreground/70">
+                <span className="text-sm text-sidebar-foreground/70">
                   Admin Panel
                 </span>
               </div>
@@ -65,7 +65,7 @@ export function AppSidebar() {
               <img
                 src="/MahajanaSuper.jpg"
                 alt="Mahajana Super"
-                className="h-12 w-12 rounded-lg object-cover"
+                className="h-14 w-14 rounded-lg object-cover"
               />
             </div>
           )}

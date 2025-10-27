@@ -67,6 +67,9 @@ const mockBranches = [
 export default function Branches() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingBranch, setEditingBranch] = useState<
+    (typeof mockBranches)[0] | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -84,11 +87,38 @@ export default function Branches() {
     description: "",
   });
 
+  const handleEdit = (branch: (typeof mockBranches)[0]) => {
+    setEditingBranch(branch);
+    setFormData({
+      name: branch.name,
+      code: branch.code,
+      address: branch.address,
+      city: "",
+      district: "",
+      postalCode: "",
+      phone: branch.phone,
+      email: "",
+      manager: branch.manager,
+      latitude: "",
+      longitude: "",
+      openingTime: "",
+      closingTime: "",
+      description: "",
+    });
+    setIsAddDialogOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API call will be implemented here: POST /admin/branches
-    console.log("Branch form data:", formData);
+    if (editingBranch) {
+      // API call will be implemented here: PUT /admin/branches/:id
+      console.log("Updating branch:", editingBranch.id, formData);
+    } else {
+      // API call will be implemented here: POST /admin/branches
+      console.log("Creating new branch:", formData);
+    }
     setIsAddDialogOpen(false);
+    setEditingBranch(null);
     setFormData({
       name: "",
       code: "",
@@ -118,7 +148,31 @@ export default function Branches() {
             Manage your supermarket branches
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog
+          open={isAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              setEditingBranch(null);
+              setFormData({
+                name: "",
+                code: "",
+                address: "",
+                city: "",
+                district: "",
+                postalCode: "",
+                phone: "",
+                email: "",
+                manager: "",
+                latitude: "",
+                longitude: "",
+                openingTime: "",
+                closingTime: "",
+                description: "",
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth">
               <Plus className="mr-2 h-4 w-4" />
@@ -129,10 +183,12 @@ export default function Branches() {
             <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Add New Branch
+                {editingBranch ? "Edit Branch" : "Add New Branch"}
               </DialogTitle>
               <DialogDescription>
-                Create a new branch location for your supermarket chain.
+                {editingBranch
+                  ? "Update the branch details below."
+                  : "Create a new branch location for your supermarket chain."}
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">

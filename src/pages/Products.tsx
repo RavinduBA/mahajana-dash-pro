@@ -101,7 +101,9 @@ const mockProducts = [
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<typeof mockProducts[0] | null>(null);
+  const [editingProduct, setEditingProduct] = useState<
+    (typeof mockProducts)[0] | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
@@ -136,7 +138,7 @@ export default function Products() {
     }
   };
 
-  const handleEdit = (product: typeof mockProducts[0]) => {
+  const handleEdit = (product: (typeof mockProducts)[0]) => {
     setEditingProduct(product);
     setFormData({
       name: product.name,
@@ -194,26 +196,29 @@ export default function Products() {
             Manage your product inventory
           </p>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-          setIsAddDialogOpen(open);
-          if (!open) {
-            setEditingProduct(null);
-            setFormData({
-              name: "",
-              sku: "",
-              description: "",
-              category: "",
-              brand: "",
-              price: "",
-              unit: "",
-              stock: "",
-              minStock: "",
-              maxStock: "",
-              barcode: "",
-              image: null,
-            });
-          }
-        }}>
+        <Dialog
+          open={isAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              setEditingProduct(null);
+              setFormData({
+                name: "",
+                sku: "",
+                description: "",
+                category: "",
+                brand: "",
+                price: "",
+                unit: "",
+                stock: "",
+                minStock: "",
+                maxStock: "",
+                barcode: "",
+                image: null,
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth">
               <Plus className="mr-2 h-4 w-4" />
@@ -227,7 +232,7 @@ export default function Products() {
                 {editingProduct ? "Edit Product" : "Add New Product"}
               </DialogTitle>
               <DialogDescription>
-                {editingProduct 
+                {editingProduct
                   ? "Update the product information below."
                   : "Create a new product in your inventory. Fill in all required fields."}
               </DialogDescription>
@@ -520,7 +525,9 @@ export default function Products() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => console.log("Delete product:", product.id)}
+                        onClick={() =>
+                          console.log("Delete product:", product.id)
+                        }
                         className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                         title="Delete product"
                       >

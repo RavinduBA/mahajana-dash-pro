@@ -8,6 +8,7 @@ import {
   Filter,
   Trash2,
   Eye,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +79,9 @@ const mockNotifications = [
 export default function Notifications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isComposeDialogOpen, setIsComposeDialogOpen] = useState(false);
+  const [editingNotification, setEditingNotification] = useState<
+    (typeof mockNotifications)[0] | null
+  >(null);
   const [formData, setFormData] = useState({
     title: "",
     message: "",
@@ -92,11 +96,35 @@ export default function Notifications() {
     actionUrl: "",
   });
 
+  const handleEdit = (notification: (typeof mockNotifications)[0]) => {
+    setEditingNotification(notification);
+    setFormData({
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      targetAudience: notification.sentTo,
+      scheduledDate: "",
+      scheduledTime: "",
+      sendPush: true,
+      sendEmail: false,
+      sendSMS: false,
+      imageUrl: "",
+      actionUrl: "",
+    });
+    setIsComposeDialogOpen(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // API call: POST /admin/notifications
-    console.log("Notification form data:", formData);
+    if (editingNotification) {
+      // API call: PUT /admin/notifications/:id
+      console.log("Updating notification:", editingNotification.id, formData);
+    } else {
+      // API call: POST /admin/notifications
+      console.log("Creating new notification:", formData);
+    }
     setIsComposeDialogOpen(false);
+    setEditingNotification(null);
     setFormData({
       title: "",
       message: "",
@@ -137,7 +165,25 @@ export default function Notifications() {
         </div>
         <Dialog
           open={isComposeDialogOpen}
-          onOpenChange={setIsComposeDialogOpen}
+          onOpenChange={(open) => {
+            setIsComposeDialogOpen(open);
+            if (!open) {
+              setEditingNotification(null);
+              setFormData({
+                title: "",
+                message: "",
+                type: "announcement",
+                targetAudience: "all",
+                scheduledDate: "",
+                scheduledTime: "",
+                sendPush: true,
+                sendEmail: false,
+                sendSMS: false,
+                imageUrl: "",
+                actionUrl: "",
+              });
+            }
+          }}
         >
           <DialogTrigger asChild>
             <Button className="bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth">
@@ -149,11 +195,14 @@ export default function Notifications() {
             <DialogHeader className="px-6 pt-6 flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5" />
-                Compose New Notification
+                {editingNotification
+                  ? "Edit Notification"
+                  : "Compose New Notification"}
               </DialogTitle>
               <DialogDescription>
-                Create and send notifications to your customers via push, email,
-                or SMS.
+                {editingNotification
+                  ? "Update the notification details below."
+                  : "Create and send notifications to your customers via push, email, or SMS."}
               </DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin">
@@ -379,8 +428,17 @@ export default function Notifications() {
                   !formData.sendPush && !formData.sendEmail && !formData.sendSMS
                 }
               >
-                <Send className="mr-2 h-4 w-4" />
-                {formData.scheduledDate ? "Schedule" : "Send Now"}
+                {editingNotification ? (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Update Notification
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    {formData.scheduledDate ? "Schedule" : "Send Now"}
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -457,6 +515,7 @@ export default function Notifications() {
                         size="icon"
                         className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
                         title="View Details"
+                        onClick={() => handleEdit(notification)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -465,6 +524,9 @@ export default function Notifications() {
                         size="icon"
                         className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
                         title="Delete"
+                        onClick={() =>
+                          console.log("Delete notification:", notification.id)
+                        }
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
