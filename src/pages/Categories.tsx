@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Edit, Trash2, FolderTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,101 +30,160 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-// Mock data
-const mockCategories = [
-  {
-    id: 1,
-    name: "Dairy Products",
-    slug: "dairy",
-    parentId: null,
-    productCount: 45,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Milk",
-    slug: "milk",
-    parentId: 1,
-    productCount: 12,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Bakery",
-    slug: "bakery",
-    parentId: null,
-    productCount: 32,
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Fresh Produce",
-    slug: "produce",
-    parentId: null,
-    productCount: 67,
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Frozen Foods",
-    slug: "frozen",
-    parentId: null,
-    productCount: 23,
-    status: "inactive",
-  },
-];
+import { toast } from "@/hooks/use-toast";
+import {
+  Category,
+  CategoryFormData,
+  fetchCategories,
+  fetchRootCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from "@/services/categoryService";
 
 export default function Categories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<
-    (typeof mockCategories)[0] | null
-  >(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    parentId: "",
-    description: "",
-    displayOrder: "",
-    metaTitle: "",
-    metaDescription: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [formData, setFormData] = useState<CategoryFormData>({
+    title: "",
+    titleTamil: "",
+    icon: "",
+    color: "",
+    parent: null,
+    level: 1,
+    orderBy: 0,
+    margin: 0,
   });
 
-  const handleEdit = (category: (typeof mockCategories)[0]) => {
+  // Load categories from API
+  const loadCategories = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchCategories();
+      console.log("Loaded categories:", data);
+      setCategories(data.categories || []);
+    } catch (err) {
+      console.error("Failed to load categories", err);
+      toast({
+        title: "Error",
+        description: "Failed to load categories",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load parent categories for dropdown
+  const loadParentCategories = async () => {
+    try {
+      const roots = await fetchRootCategories();
+      setParentCategories(roots);
+    } catch (err) {
+      console.error("Failed to load parent categories", err);
+    }
+  };
+
+  useEffect(() => {
+    loadCategories();
+    loadParentCategories();
+  }, []);
+
+  const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setFormData({
-      name: category.name,
-      slug: category.slug,
-      parentId: category.parentId?.toString() || "",
-      description: "",
-      displayOrder: "",
-      metaTitle: "",
-      metaDescription: "",
+      title: category.title,
+      titleTamil: category.title_tamil || "",
+      icon: category.icon || "",
+      color: category.color || "",
+      parent: category.parent || null,
+      level: category.level,
+      orderBy: category.order_by || 0,
+      margin: category.margin || 0,
     });
     setIsAddDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingCategory) {
-      console.log("Updating category:", editingCategory.id, formData);
-      // API call: PUT /admin/categories/:id
-    } else {
-      console.log("Creating category:", formData);
-      // API call: POST /admin/categories
-    }
-    setIsAddDialogOpen(false);
-    setEditingCategory(null);
+  const resetForm = () => {
     setFormData({
-      name: "",
-      slug: "",
-      parentId: "",
-      description: "",
-      displayOrder: "",
-      metaTitle: "",
-      metaDescription: "",
+      title: "",
+      titleTamil: "",
+      icon: "",
+      color: "",
+      parent: null,
+      level: 1,
+      orderBy: 0,
+      margin: 0,
     });
+    setEditingCategory(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, formData);
+        toast({
+          title: "Success",
+          description: "Category updated successfully",
+        });
+      } else {
+        await createCategory(formData);
+        toast({
+          title: "Success",
+          description: "Category created successfully",
+        });
+      }
+
+      await loadCategories();
+      await loadParentCategories();
+      setIsAddDialogOpen(false);
+      resetForm();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to save category",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (category: Category) => {
+    if (!confirm(`Delete category "${category.title}"?`)) return;
+
+    setIsLoading(true);
+    try {
+      await deleteCategory(category.id);
+      toast({
+        title: "Success",
+        description: "Category deleted successfully",
+      });
+      await loadCategories();
+      await loadParentCategories();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to delete category",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getParentCategoryName = (parentId: number | null) => {
+    if (!parentId) return "Top Level";
+    const parent = categories.find((c) => c.id === parentId);
+    return parent?.title || "Unknown";
   };
 
   return (
@@ -143,16 +202,7 @@ export default function Categories() {
           onOpenChange={(open) => {
             setIsAddDialogOpen(open);
             if (!open) {
-              setEditingCategory(null);
-              setFormData({
-                name: "",
-                slug: "",
-                parentId: "",
-                description: "",
-                displayOrder: "",
-                metaTitle: "",
-                metaDescription: "",
-              });
+              resetForm();
             }
           }}
         >
@@ -182,106 +232,141 @@ export default function Categories() {
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Category Name *</Label>
+                    <Label htmlFor="title">Category Name *</Label>
                     <Input
-                      id="name"
+                      id="title"
                       placeholder="Dairy Products"
-                      value={formData.name}
+                      value={formData.title}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData({ ...formData, title: e.target.value })
                       }
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="slug">Slug *</Label>
+                    <Label htmlFor="titleTamil">Tamil Name</Label>
                     <Input
-                      id="slug"
-                      placeholder="dairy-products"
-                      value={formData.slug}
+                      id="titleTamil"
+                      placeholder="பால் பொருட்கள்"
+                      value={formData.titleTamil}
                       onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
+                        setFormData({ ...formData, titleTamil: e.target.value })
                       }
-                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="level">Level *</Label>
+                    <Select
+                      value={formData.level.toString()}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, level: Number(value) })
+                      }
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Level 1 (Top)</SelectItem>
+                        <SelectItem value="2">Level 2 (Sub)</SelectItem>
+                        <SelectItem value="3">Level 3 (Sub-sub)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="icon">Icon</Label>
+                    <Input
+                      id="icon"
+                      placeholder="icon-name"
+                      value={formData.icon}
+                      onChange={(e) =>
+                        setFormData({ ...formData, icon: e.target.value })
+                      }
+                      disabled={isLoading}
+                      maxLength={24}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="color">Color</Label>
+                    <Input
+                      id="color"
+                      placeholder="#FF5733"
+                      value={formData.color}
+                      onChange={(e) =>
+                        setFormData({ ...formData, color: e.target.value })
+                      }
+                      disabled={isLoading}
+                      maxLength={24}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentId">Parent Category</Label>
+                  <Label htmlFor="parent">Parent Category</Label>
                   <Select
-                    value={formData.parentId}
+                    value={formData.parent?.toString() || "none"}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, parentId: value })
+                      setFormData({
+                        ...formData,
+                        parent: value === "none" ? null : Number(value),
+                      })
                     }
+                    disabled={isLoading}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select parent (optional)" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">None (Top Level)</SelectItem>
-                      <SelectItem value="1">Dairy Products</SelectItem>
-                      <SelectItem value="3">Bakery</SelectItem>
-                      <SelectItem value="4">Fresh Produce</SelectItem>
+                      {parentCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id.toString()}>
+                          {cat.title}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Category description..."
-                    rows={3}
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="displayOrder">Display Order</Label>
-                  <Input
-                    id="displayOrder"
-                    type="number"
-                    placeholder="0"
-                    value={formData.displayOrder}
-                    onChange={(e) =>
-                      setFormData({ ...formData, displayOrder: e.target.value })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Lower numbers appear first
-                  </p>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t border-border">
-                  <h4 className="font-semibold text-sm">SEO Settings</h4>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="metaTitle">Meta Title</Label>
+                    <Label htmlFor="orderBy">Display Order</Label>
                     <Input
-                      id="metaTitle"
-                      placeholder="Category meta title"
-                      value={formData.metaTitle}
-                      onChange={(e) =>
-                        setFormData({ ...formData, metaTitle: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="metaDescription">Meta Description</Label>
-                    <Textarea
-                      id="metaDescription"
-                      placeholder="Category meta description"
-                      rows={2}
-                      value={formData.metaDescription}
+                      id="orderBy"
+                      type="number"
+                      placeholder="0"
+                      value={formData.orderBy}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          metaDescription: e.target.value,
+                          orderBy: Number(e.target.value),
                         })
                       }
+                      disabled={isLoading}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Lower numbers appear first
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="margin">Profit Margin (%)</Label>
+                    <Input
+                      id="margin"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={formData.margin}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          margin: Number(e.target.value),
+                        })
+                      }
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -338,75 +423,81 @@ export default function Categories() {
             <TableHeader>
               <TableRow className="border-b border-border hover:bg-muted/50">
                 <TableHead className="font-semibold">Name</TableHead>
-                <TableHead className="font-semibold">Slug</TableHead>
+                <TableHead className="font-semibold">Level</TableHead>
                 <TableHead className="font-semibold">Parent Category</TableHead>
                 <TableHead className="font-semibold">Products</TableHead>
-                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Margin</TableHead>
                 <TableHead className="text-right font-semibold">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockCategories.map((category) => (
-                <TableRow
-                  key={category.id}
-                  className="border-b border-border hover:bg-muted/30 transition-all duration-200"
-                >
-                  <TableCell className="font-medium">{category.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {category.slug}
-                  </TableCell>
-                  <TableCell>
-                    {category.parentId ? (
-                      <span className="text-sm">
-                        {
-                          mockCategories.find((c) => c.id === category.parentId)
-                            ?.name
-                        }
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">
-                        Top Level
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>{category.productCount}</TableCell>
-                  <TableCell>
-                    {category.status === "active" ? (
-                      <Badge className="bg-success text-success-foreground">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">Inactive</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
-                        title="Edit category"
-                        onClick={() => handleEdit(category)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
-                        title="Delete category"
-                        onClick={() =>
-                          console.log("Delete category:", category.id)
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : categories.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    No categories found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                categories.map((category) => (
+                  <TableRow
+                    key={category.id}
+                    className="border-b border-border hover:bg-muted/30 transition-all duration-200"
+                  >
+                    <TableCell className="font-medium">
+                      {category.title}
+                      {category.title_tamil && (
+                        <span className="text-xs text-muted-foreground block">
+                          {category.title_tamil}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">Level {category.level}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">
+                        {getParentCategoryName(category.parent || null)}
+                      </span>
+                    </TableCell>
+                    <TableCell>{category.product_count ?? "-"}</TableCell>
+                    <TableCell>
+                      {category.margin ? `${category.margin}%` : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                          title="Edit category"
+                          onClick={() => handleEdit(category)}
+                          disabled={isLoading}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                          title="Delete category"
+                          onClick={() => handleDelete(category)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

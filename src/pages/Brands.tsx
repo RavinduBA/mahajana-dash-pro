@@ -1,17 +1,8 @@
-import { useState } from "react";
-import {
-  Plus,
-  Search,
-  Edit,
-  Trash2,
-  Tag,
-  Upload,
-  ExternalLink,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Search, Edit, Trash2, Tag, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -31,104 +22,119 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
-// Mock data
-const mockBrands = [
-  {
-    id: 1,
-    name: "Anchor",
-    slug: "anchor",
-    country: "New Zealand",
-    productCount: 45,
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Araliya",
-    slug: "araliya",
-    country: "Sri Lanka",
-    productCount: 32,
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Harischandra",
-    slug: "harischandra",
-    country: "Sri Lanka",
-    productCount: 28,
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "Crysbro",
-    slug: "crysbro",
-    country: "Sri Lanka",
-    productCount: 15,
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Fortune",
-    slug: "fortune",
-    country: "India",
-    productCount: 12,
-    status: "inactive",
-  },
-];
+import { toast } from "@/hooks/use-toast";
+import {
+  Brand,
+  BrandFormData,
+  fetchBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
+} from "@/services/brandService";
 
 export default function Brands() {
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<
-    (typeof mockBrands)[0] | null
-  >(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
-    description: "",
-    country: "",
-    website: "",
-    logo: null as File | null,
-    contactEmail: "",
-    contactPhone: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [formData, setFormData] = useState<BrandFormData>({
+    title: "",
+    icon: null,
   });
 
-  const handleEdit = (brand: (typeof mockBrands)[0]) => {
+  // Load brands from API
+  const loadBrands = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchBrands();
+      console.log("Loaded brands data:", data);
+      console.log("Brands array:", data.brands);
+      setBrands(data.brands || []);
+    } catch (err) {
+      console.error("Failed to load brands", err);
+      toast({
+        title: "Error",
+        description: "Failed to load brands",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBrands();
+  }, []);
+
+  const handleEdit = (brand: Brand) => {
     setEditingBrand(brand);
     setFormData({
-      name: brand.name,
-      slug: brand.slug,
-      description: "",
-      country: brand.country,
-      website: "",
-      logo: null,
-      contactEmail: "",
-      contactPhone: "",
+      title: brand.title,
+      icon: brand.icon || null,
     });
     setIsAddDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingBrand) {
-      // API call will be implemented here: PUT /admin/brands/:id
-      console.log("Updating brand:", editingBrand.id, formData);
-    } else {
-      // API call will be implemented here: POST /admin/brands
-      console.log("Creating new brand:", formData);
-    }
-    setIsAddDialogOpen(false);
+  const resetForm = () => {
+    setFormData({ title: "", icon: null });
     setEditingBrand(null);
-    setFormData({
-      name: "",
-      slug: "",
-      description: "",
-      country: "",
-      website: "",
-      logo: null,
-      contactEmail: "",
-      contactPhone: "",
-    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      if (editingBrand) {
+        await updateBrand(editingBrand.id, formData);
+        toast({
+          title: "Success",
+          description: "Brand updated successfully",
+        });
+      } else {
+        await createBrand(formData);
+        toast({
+          title: "Success",
+          description: "Brand created successfully",
+        });
+      }
+
+      await loadBrands();
+      setIsAddDialogOpen(false);
+      resetForm();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to save brand",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (brand: Brand) => {
+    if (!confirm(`Delete brand "${brand.title}"?`)) return;
+
+    setIsLoading(true);
+    try {
+      await deleteBrand(brand.id);
+      toast({
+        title: "Success",
+        description: "Brand deleted successfully",
+      });
+      await loadBrands();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to delete brand",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -145,17 +151,7 @@ export default function Brands() {
           onOpenChange={(open) => {
             setIsAddDialogOpen(open);
             if (!open) {
-              setEditingBrand(null);
-              setFormData({
-                name: "",
-                slug: "",
-                description: "",
-                country: "",
-                website: "",
-                logo: null,
-                contactEmail: "",
-                contactPhone: "",
-              });
+              resetForm();
             }
           }}
         >
@@ -183,134 +179,34 @@ export default function Brands() {
                 onSubmit={handleSubmit}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Brand Name *</Label>
-                    <Input
-                      id="name"
-                      placeholder="Anchor"
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="slug">Slug *</Label>
-                    <Input
-                      id="slug"
-                      placeholder="anchor"
-                      value={formData.slug}
-                      onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Brand description..."
-                    rows={3}
-                    value={formData.description}
+                  <Label htmlFor="title">Brand Name *</Label>
+                  <Input
+                    id="title"
+                    placeholder="Anchor"
+                    value={formData.title}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setFormData({ ...formData, title: e.target.value })
                     }
+                    required
+                    disabled={isLoading}
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country of Origin</Label>
-                    <Input
-                      id="country"
-                      placeholder="Sri Lanka"
-                      value={formData.country}
-                      onChange={(e) =>
-                        setFormData({ ...formData, country: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="website"
-                      className="flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Website
-                    </Label>
-                    <Input
-                      id="website"
-                      type="url"
-                      placeholder="https://brand.com"
-                      value={formData.website}
-                      onChange={(e) =>
-                        setFormData({ ...formData, website: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="logo">Brand Logo</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="logo"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          logo: e.target.files?.[0] || null,
-                        })
-                      }
-                      className="cursor-pointer"
-                    />
-                    <Upload className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  <Label htmlFor="icon">Icon (optional)</Label>
+                  <Input
+                    id="icon"
+                    placeholder="icon-name or url"
+                    value={formData.icon || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, icon: e.target.value || null })
+                    }
+                    disabled={isLoading}
+                  />
                   <p className="text-xs text-muted-foreground">
-                    Recommended: Square logo, PNG format
+                    Enter an icon identifier or URL (max 64 characters)
                   </p>
-                </div>
-
-                <div className="space-y-4 pt-4 border-t">
-                  <h4 className="font-semibold text-sm">Contact Information</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contactEmail">Email</Label>
-                      <Input
-                        id="contactEmail"
-                        type="email"
-                        placeholder="contact@brand.com"
-                        value={formData.contactEmail}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            contactEmail: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contactPhone">Phone</Label>
-                      <Input
-                        id="contactPhone"
-                        type="tel"
-                        placeholder="+94 11 234 5678"
-                        value={formData.contactPhone}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            contactPhone: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  </div>
                 </div>
               </form>
             </div>
@@ -365,8 +261,6 @@ export default function Brands() {
             <TableHeader>
               <TableRow className="border-b border-border hover:bg-muted/50">
                 <TableHead className="font-semibold">Brand Name</TableHead>
-                <TableHead className="font-semibold">Slug</TableHead>
-                <TableHead className="font-semibold">Country</TableHead>
                 <TableHead className="font-semibold">Products</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="text-right font-semibold">
@@ -375,50 +269,58 @@ export default function Brands() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockBrands.map((brand) => (
-                <TableRow
-                  key={brand.id}
-                  className="border-b border-border hover:bg-muted/30 transition-smooth"
-                >
-                  <TableCell className="font-medium">{brand.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {brand.slug}
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    Loading...
                   </TableCell>
-                  <TableCell>{brand.country}</TableCell>
-                  <TableCell>{brand.productCount}</TableCell>
-                  <TableCell>
-                    {brand.status === "active" ? (
+                </TableRow>
+              ) : brands.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8">
+                    No brands found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                brands.map((brand) => (
+                  <TableRow
+                    key={brand.id}
+                    className="border-b border-border hover:bg-muted/30 transition-smooth"
+                  >
+                    <TableCell className="font-medium">{brand.title}</TableCell>
+                    <TableCell>{brand.product_count ?? "-"}</TableCell>
+                    <TableCell>
                       <Badge className="bg-success text-success-foreground">
                         Active
                       </Badge>
-                    ) : (
-                      <Badge variant="secondary">Inactive</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
-                        title="Edit brand"
-                        onClick={() => handleEdit(brand)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
-                        title="Delete brand"
-                        onClick={() => console.log("Delete brand:", brand.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200"
+                          title="Edit brand"
+                          onClick={() => handleEdit(brand)}
+                          disabled={isLoading}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200"
+                          title="Delete brand"
+                          onClick={() => handleDelete(brand)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

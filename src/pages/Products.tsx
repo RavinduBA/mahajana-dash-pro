@@ -38,78 +38,113 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { apiClient } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
-
-interface Product {
-  id: number;
-  title: string;
-  description?: string;
-  sku: string;
-  barcode?: string;
-  price: number;
-  unit: string;
-  image?: string;
-  category?: {
-    id: number;
-    title: string;
-  };
-  brand?: {
-    id: number;
-    title: string;
-  };
-  branches?: Array<{
-    id: number;
-    branch: {
-      id: number;
-      title: string;
-    };
-    stock: number;
-    minStock: number;
-    maxStock: number;
-  }>;
-}
+import { apiClient } from "@/lib/api";
+import {
+  Product,
+  ProductFormData,
+  fetchProducts as fetchProductsService,
+  createProduct as createProductService,
+  updateProduct as updateProductService,
+  deleteProduct as deleteProductService,
+} from "@/services/productService";
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     sku: "",
+    supplierCode: "",
     description: "",
     category: "",
     brand: "",
+    company: "",
+    dept: "",
+    status: "1",
+    weighted: "0",
+    expiry: "",
+    trackInventory: "1",
+    discount: "1",
+    points: "1",
+    isReturnable: "1",
+    spec: "",
+    warranty: "",
+    tags: "",
+    image: null,
+    // Legacy fields
     price: "",
     unit: "",
     stock: "",
     minStock: "",
     maxStock: "",
     barcode: "",
-    image: null as File | null,
   });
 
   useEffect(() => {
-    fetchProducts();
+    loadProducts();
+    loadCategories();
+    loadBrands();
   }, []);
 
-  const fetchProducts = async () => {
+  const loadProducts = async () => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get<{ data: { products: Product[]; pagination: any } }>("/products");
-      console.log("Products fetched:", response);
-      setProducts(response.data?.products || []);
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
+      const productsData = await fetchProductsService();
+      console.log("✅ Products loaded successfully:", productsData);
+      console.log("📦 First product sample:", productsData[0]);
+      setProducts(productsData);
+    } catch (error: any) {
+      console.error("❌ Error loading products:", error);
       toast({
         title: "Error",
-        description: "Failed to load products",
+        description: error.message || "Failed to load products",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await apiClient.get<any>("/categories");
+      console.log("Categories loaded:", response);
+
+      // Extract categories from response
+      const categoriesData =
+        response.data?.categories || response.categories || [];
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+      toast({
+        title: "Warning",
+        description: "Failed to load categories",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadBrands = async () => {
+    try {
+      const response = await apiClient.get<any>("/brands");
+      console.log("Brands loaded:", response);
+
+      // Extract brands from response
+      const brandsData = response.data?.brands || response.brands || [];
+      setBrands(brandsData);
+    } catch (error) {
+      console.error("Failed to load brands:", error);
+      toast({
+        title: "Warning",
+        description: "Failed to load brands",
+        variant: "destructive",
+      });
     }
   };
 
@@ -119,6 +154,11 @@ export default function Products() {
   };
 
   const getStockStatus = (product: Product) => {
+    // If no branch data, show as "No Stock Data" instead of "Out of Stock"
+    if (!product.branches || product.branches.length === 0) {
+      return "no_data";
+    }
+
     const totalStock = getTotalStock(product);
     const minStock = product.branches?.[0]?.minStock || 10;
 
@@ -143,6 +183,8 @@ export default function Products() {
         );
       case "out_of_stock":
         return <Badge variant="destructive">Out of Stock</Badge>;
+      case "no_data":
+        return <Badge variant="secondary">No Stock Data</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -152,33 +194,53 @@ export default function Products() {
     setEditingProduct(product);
     setFormData({
       name: product.title,
-      sku: product.sku,
-      description: product.description || "",
-      category: product.category?.id.toString() || "",
-      brand: product.brand?.id.toString() || "",
-      price: product.price.toString(),
-      unit: product.unit,
+      sku: product.uiCode || product.sku || "",
+      supplierCode: product.supplierCode || "",
+      description: product.genericName || product.description || "",
+      category: product.category?.id?.toString() || "",
+      brand: product.brand?.id?.toString() || "",
+      company: product.company?.id?.toString() || "",
+      dept: product.dept?.toString() || "",
+      status: product.status?.toString() || "1",
+      weighted: product.weighted?.toString() || "0",
+      expiry: product.expiry?.toString() || "",
+      trackInventory: product.trackInventory?.toString() || "1",
+      discount: product.discount?.toString() || "1",
+      points: product.points?.toString() || "1",
+      isReturnable: product.isReturnable?.toString() || "1",
+      spec: product.spec || "",
+      warranty: product.warranty || "",
+      tags: product.tags || "",
+      image: null,
+      // Legacy fields
+      price: product.price?.toString() || "",
+      unit: product.unit || "",
       stock: getTotalStock(product).toString(),
       minStock: product.branches?.[0]?.minStock.toString() || "",
       maxStock: product.branches?.[0]?.maxStock.toString() || "",
       barcode: product.barcode || "",
-      image: null,
     });
     setIsAddDialogOpen(true);
   };
 
   const handleDelete = async (productId: number) => {
-    if (!confirm("Are you sure you want to delete this product?")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this product? This will also remove the image from Cloudinary."
+      )
+    ) {
       return;
     }
 
     try {
-      await apiClient.delete(`/admin/products/${productId}`);
+      await deleteProductService(productId);
+
       toast({
         title: "Success",
-        description: "Product deleted successfully",
+        description: "Product and associated image deleted successfully",
       });
-      fetchProducts();
+
+      await loadProducts();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -194,45 +256,27 @@ export default function Products() {
 
     try {
       if (editingProduct) {
-        // Update existing product
-        await apiClient.put(`/admin/products/${editingProduct.id}`, {
-          title: formData.name,
-          sku: formData.sku,
-          description: formData.description,
-          categoryId: formData.category ? Number(formData.category) : undefined,
-          brandId: formData.brand ? Number(formData.brand) : undefined,
-          price: Number(formData.price),
-          unit: formData.unit,
-          barcode: formData.barcode || undefined,
-        });
-
+        await updateProductService(editingProduct.id, formData);
         toast({
           title: "Success",
           description: "Product updated successfully",
         });
       } else {
-        // Create new product
-        await apiClient.post("/admin/products", {
-          title: formData.name,
-          sku: formData.sku,
-          description: formData.description,
-          categoryId: formData.category ? Number(formData.category) : undefined,
-          brandId: formData.brand ? Number(formData.brand) : undefined,
-          price: Number(formData.price),
-          unit: formData.unit,
-          barcode: formData.barcode || undefined,
-        });
-
+        await createProductService(formData);
         toast({
           title: "Success",
-          description: "Product created successfully",
+          description: formData.image
+            ? "Product created successfully with image"
+            : "Product created successfully",
         });
       }
 
       setIsAddDialogOpen(false);
       setEditingProduct(null);
       resetForm();
-      fetchProducts();
+
+      // Refresh product list
+      await loadProducts();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -248,27 +292,43 @@ export default function Products() {
     setFormData({
       name: "",
       sku: "",
+      supplierCode: "",
       description: "",
       category: "",
       brand: "",
+      company: "",
+      dept: "",
+      status: "1",
+      weighted: "0",
+      expiry: "",
+      trackInventory: "1",
+      discount: "1",
+      points: "1",
+      isReturnable: "1",
+      spec: "",
+      warranty: "",
+      tags: "",
+      image: null,
+      // Legacy fields
       price: "",
       unit: "",
       stock: "",
       minStock: "",
       maxStock: "",
       barcode: "",
-      image: null,
     });
   };
 
   const filteredProducts = products.filter(
     (product) =>
       product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category?.title
+      (product.uiCode || product.sku || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      product.brand?.title.toLowerCase().includes(searchQuery.toLowerCase())
+      product.category?.title
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      product.brand?.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -291,16 +351,30 @@ export default function Products() {
               setFormData({
                 name: "",
                 sku: "",
+                supplierCode: "",
                 description: "",
                 category: "",
                 brand: "",
+                company: "",
+                dept: "",
+                status: "1",
+                weighted: "0",
+                expiry: "",
+                trackInventory: "1",
+                discount: "1",
+                points: "1",
+                isReturnable: "1",
+                spec: "",
+                warranty: "",
+                tags: "",
+                image: null,
+                // Legacy fields
                 price: "",
                 unit: "",
                 stock: "",
                 minStock: "",
                 maxStock: "",
                 barcode: "",
-                image: null,
               });
             }
           }}
@@ -377,21 +451,28 @@ export default function Products() {
                       onValueChange={(value) =>
                         setFormData({ ...formData, category: value })
                       }
+                      required
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="dairy">Dairy</SelectItem>
-                        <SelectItem value="bakery">Bakery</SelectItem>
-                        <SelectItem value="grains">Grains</SelectItem>
-                        <SelectItem value="meat">Meat</SelectItem>
-                        <SelectItem value="oils">Oils</SelectItem>
+                        {categories.length === 0 ? (
+                          <SelectItem value="0" disabled>
+                            Loading categories...
+                          </SelectItem>
+                        ) : (
+                          categories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id.toString()}>
+                              {cat.title}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="brand">Brand *</Label>
+                    <Label htmlFor="brand">Brand</Label>
                     <Select
                       value={formData.brand}
                       onValueChange={(value) =>
@@ -402,104 +483,254 @@ export default function Products() {
                         <SelectValue placeholder="Select brand" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="anchor">Anchor</SelectItem>
-                        <SelectItem value="araliya">Araliya</SelectItem>
-                        <SelectItem value="harischandra">
-                          Harischandra
-                        </SelectItem>
-                        <SelectItem value="crysbro">Crysbro</SelectItem>
+                        {brands.length === 0 ? (
+                          <SelectItem value="0" disabled>
+                            Loading brands...
+                          </SelectItem>
+                        ) : (
+                          brands.map((brand) => (
+                            <SelectItem
+                              key={brand.id}
+                              value={brand.id.toString()}
+                            >
+                              {brand.title}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Price (LKR) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      placeholder="250.00"
-                      value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="unit">Unit *</Label>
-                    <Select
-                      value={formData.unit}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, unit: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kg">Kilogram (kg)</SelectItem>
-                        <SelectItem value="g">Gram (g)</SelectItem>
-                        <SelectItem value="L">Liter (L)</SelectItem>
-                        <SelectItem value="ml">Milliliter (ml)</SelectItem>
-                        <SelectItem value="pcs">Pieces (pcs)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="stock">Stock Quantity *</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      placeholder="100"
-                      value={formData.stock}
-                      onChange={(e) =>
-                        setFormData({ ...formData, stock: e.target.value })
-                      }
-                      required
-                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="minStock">Min Stock Level</Label>
+                    <Label htmlFor="company">Supplier/Manufacturer</Label>
+                    <Select
+                      value={formData.company}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, company: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Supplier A</SelectItem>
+                        <SelectItem value="2">Supplier B</SelectItem>
+                        <SelectItem value="3">Supplier C</SelectItem>
+                        <SelectItem value="4">Manufacturer A</SelectItem>
+                        <SelectItem value="5">Manufacturer B</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, status: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Active</SelectItem>
+                        <SelectItem value="0">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="supplierCode">Supplier Code</Label>
                     <Input
-                      id="minStock"
-                      type="number"
-                      placeholder="10"
-                      value={formData.minStock}
+                      id="supplierCode"
+                      placeholder="SUP-2024-001"
+                      value={formData.supplierCode}
                       onChange={(e) =>
-                        setFormData({ ...formData, minStock: e.target.value })
+                        setFormData({
+                          ...formData,
+                          supplierCode: e.target.value,
+                        })
                       }
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="maxStock">Max Stock Level</Label>
+                    <Label htmlFor="dept">Department</Label>
+                    <Select
+                      value={formData.dept}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, dept: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Groceries</SelectItem>
+                        <SelectItem value="2">Beverages</SelectItem>
+                        <SelectItem value="3">Dairy</SelectItem>
+                        <SelectItem value="4">Bakery</SelectItem>
+                        <SelectItem value="5">Household</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weighted">Sold by Weight</Label>
+                    <Select
+                      value={formData.weighted}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, weighted: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No (Unit-based)</SelectItem>
+                        <SelectItem value="1">Yes (By weight)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="expiry">Expiry Alert (Days)</Label>
                     <Input
-                      id="maxStock"
+                      id="expiry"
                       type="number"
-                      placeholder="500"
-                      value={formData.maxStock}
+                      placeholder="365"
+                      value={formData.expiry}
                       onChange={(e) =>
-                        setFormData({ ...formData, maxStock: e.target.value })
+                        setFormData({ ...formData, expiry: e.target.value })
                       }
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Days before expiry to trigger alert
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="trackInventory">Track Inventory</Label>
+                    <Select
+                      value={formData.trackInventory}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, trackInventory: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Yes (Track stock)</SelectItem>
+                        <SelectItem value="0">No (Don't track)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="discount">Allow Discounts</Label>
+                    <Select
+                      value={formData.discount}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, discount: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Yes (Allow)</SelectItem>
+                        <SelectItem value="0">No (Fixed price)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="points">Loyalty Points</Label>
+                    <Select
+                      value={formData.points}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, points: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Yes (Earn points)</SelectItem>
+                        <SelectItem value="0">No (No points)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="isReturnable">Returnable</Label>
+                    <Select
+                      value={formData.isReturnable}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, isReturnable: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Yes (Can return)</SelectItem>
+                        <SelectItem value="0">No (Final sale)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="barcode">Barcode</Label>
-                  <Input
-                    id="barcode"
-                    placeholder="1234567890123"
-                    value={formData.barcode}
+                  <Label htmlFor="spec">Product Specifications</Label>
+                  <Textarea
+                    id="spec"
+                    placeholder="Size, dimensions, ingredients, nutritional info, etc."
+                    rows={3}
+                    value={formData.spec}
                     onChange={(e) =>
-                      setFormData({ ...formData, barcode: e.target.value })
+                      setFormData({ ...formData, spec: e.target.value })
                     }
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Technical specifications, ingredients, or detailed product
+                    information (max 2048 chars)
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="warranty">Warranty Information</Label>
+                    <Input
+                      id="warranty"
+                      placeholder="1 year warranty, 30 days return policy"
+                      value={formData.warranty}
+                      onChange={(e) =>
+                        setFormData({ ...formData, warranty: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tags">Product Tags</Label>
+                    <Input
+                      id="tags"
+                      placeholder="organic, gluten-free, vegan"
+                      value={formData.tags}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tags: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Comma-separated tags for search and filtering
+                    </p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -519,6 +750,19 @@ export default function Products() {
                     />
                     <Upload className="h-4 w-4 text-muted-foreground" />
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload product image (JPG, PNG, WebP). Max 10MB.
+                  </p>
+                </div>
+
+                {/* Note about branch-specific fields */}
+                <div className="rounded-lg border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950/20 p-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Note:</strong> Price, stock quantity, and other
+                    inventory fields are managed per branch. After creating the
+                    product, you can set branch-specific pricing and inventory
+                    in the Branch Management section.
+                  </p>
                 </div>
               </form>
             </div>
@@ -584,11 +828,13 @@ export default function Products() {
               <TableRow className="border-b border-border hover:bg-muted/50">
                 <TableHead className="font-semibold">SKU</TableHead>
                 <TableHead className="font-semibold">Product Name</TableHead>
+                <TableHead className="font-semibold">Supplier Code</TableHead>
                 <TableHead className="font-semibold">Category</TableHead>
                 <TableHead className="font-semibold">Brand</TableHead>
-                <TableHead className="font-semibold">Price (LKR)</TableHead>
-                <TableHead className="font-semibold">Stock</TableHead>
+                <TableHead className="font-semibold">Company</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Flags</TableHead>
+                <TableHead className="font-semibold">Stock Status</TableHead>
                 <TableHead className="text-right font-semibold">
                   Actions
                 </TableHead>
@@ -597,13 +843,13 @@ export default function Products() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     Loading products...
                   </TableCell>
                 </TableRow>
               ) : filteredProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={10} className="text-center py-8">
                     <div className="space-y-2">
                       <Package className="h-12 w-12 text-muted-foreground mx-auto" />
                       <p className="text-muted-foreground">
@@ -620,13 +866,78 @@ export default function Products() {
                     key={product.id}
                     className="border-b border-border hover:bg-muted/30 transition-smooth"
                   >
-                    <TableCell className="font-medium">{product.sku}</TableCell>
-                    <TableCell>{product.title}</TableCell>
+                    <TableCell className="font-medium">
+                      {product.uiCode || product.sku || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {product.img && (
+                          <img
+                            src={product.img}
+                            alt={product.title}
+                            className="w-8 h-8 object-cover rounded"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display =
+                                "none";
+                            }}
+                          />
+                        )}
+                        <div>
+                          <div>{product.title}</div>
+                          {product.genericName && (
+                            <div className="text-xs text-muted-foreground">
+                              {product.genericName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.supplierCode || "-"}</TableCell>
                     <TableCell>{product.category?.title || "-"}</TableCell>
                     <TableCell>{product.brand?.title || "-"}</TableCell>
-                    <TableCell>Rs. {product.price.toFixed(2)}</TableCell>
+                    <TableCell>{product.company?.title || "-"}</TableCell>
                     <TableCell>
-                      {getTotalStock(product)} {product.unit}
+                      {product.status === 1 ? (
+                        <Badge className="bg-green-500 text-white">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary">Inactive</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {product.weighted === 1 && (
+                          <Badge variant="outline" className="text-xs">
+                            Weight
+                          </Badge>
+                        )}
+                        {product.discount === 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            No Discount
+                          </Badge>
+                        )}
+                        {product.points === 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            No Points
+                          </Badge>
+                        )}
+                        {product.isReturnable === 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            Final Sale
+                          </Badge>
+                        )}
+                        {product.trackInventory === 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            No Tracking
+                          </Badge>
+                        )}
+                        {product.expiry && (
+                          <Badge variant="outline" className="text-xs">
+                            Exp: {product.expiry}d
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(product)}</TableCell>
                     <TableCell className="text-right">
